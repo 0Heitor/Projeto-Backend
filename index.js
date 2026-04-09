@@ -11,7 +11,7 @@ import rotaCategoriaSubGrupo from "./rotas/rotaCategoriaSubGrupo.js"
 */
 
 const host = process.env.HOST;
-const porta = process.env.PORT;
+const porta = process.env.PORT || 3000;
 
 const app = express();
 
@@ -28,4 +28,7 @@ app.use("/api/cacambas", rotaCacamba);
 //app.use("/api/categorias/grupo", rotaCategoriaGrupo);
 //app.use("/api/categorias/subgrupo", rotaCategoriaSubGrupo);
 
-const servidorHTTP = ViteExpress.listen(app, process.env.PORT, () => {});
+//const servidorHTTP = ViteExpress.listen(app, process.env.PORT, () => {});
+app.listen(porta, '0.0.0.0', () => {
+  console.log(`Servidor rodando na porta ${porta}`);
+});
