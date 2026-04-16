@@ -23,6 +23,8 @@ export async function enviarEmailRecuperacao(emailUsuario) {
             rejectUnauthorized: false
         },
         connectionTimeout: 10000,
+        greetingTimeout: 10000,   // Espera 10 segundos pela saudação do servidor
+        socketTimeout: 20000,
     });
 
     const mailOptions = {
