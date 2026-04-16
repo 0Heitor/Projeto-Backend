@@ -1,17 +1,45 @@
 import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
+import axios from 'axios';
 import dotenv from 'dotenv';
 import https from 'https';
 import { createRequire } from 'module';
 
+//const resend = new Resend(process.env.RESEND_API_KEY);
 //const require = createRequire(import.meta.url);
 //const sslRootCas = require('ssl-root-cas').create();
 //https.globalAgent.options.ca = sslRootCas;
 dotenv.config();
 
-export async function enviarEmailRecuperacao(emailUsuario) {
+export async function enviarEmailRecuperacao(emailUsuario, nomeUsuario) {
     const codigoRecuperacao = Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
+    
+    const data = {
+        service_id: process.env.EMAILJS_SERVICE_ID,
+        template_id: process.env.EMAILJS_TEMPLATE_ID,
+        user_id: process.env.EMAILJS_PUBLIC_KEY,
+        accessToken: process.env.EMAILJS_PRIVATE_KEY,
+        template_params: {
+            'nome_usuario': nomeUsuario,
+            'codigo_recuperacao': codigoRecuperacao,
+            'email_to': emailUsuario
+        }
+    };
 
-    const transporter = nodemailer.createTransport({
+    try {
+        await axios.post('https://api.emailjs.com/api/v1.0/email/send', data);
+        //console.log('✅ E-mail enviado com sucesso via EmailJS!');
+        //return { sucesso: true };
+        return codigoRecuperacao;
+    } catch (error) {
+        console.error('❌ Erro ao enviar via EmailJS:', error.response ? error.response.data : error.message);
+        return { sucesso: false, erro: error.message };
+    }
+
+
+
+
+    /*const transporter = nodemailer.createTransport({
         host: "smtp.gmail.com",
         port: 587,
         secure: false,
@@ -51,5 +79,5 @@ export async function enviarEmailRecuperacao(emailUsuario) {
     } catch (error) {
         console.error("Erro no serviço de e-mail:", error);
         throw new Error("Não foi possível enviar o e-mail.");
-    }
+    }*/
 }

@@ -305,7 +305,7 @@ export default class UsuarioCTRL{
                         if(resultado.encontrado){
                             try{
                                 
-                                const codigoRecuperacao = await enviarEmailRecuperacao(email);
+                                const codigoRecuperacao = await enviarEmailRecuperacao(email, resultado.lista[0].nome);
                                 usuario.codigo_recuperacao = codigoRecuperacao;
                                 usuario.codigo_recuperacao_validade = new Date(Date.now() + 5 * 60 * 1000).toISOString();
                                 usuario.tentativas_recuperacao = 5;
