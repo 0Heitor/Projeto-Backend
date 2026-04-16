@@ -9,9 +9,12 @@ export default class Usuario{
     #ativo
     #ultimo_login
     #criado
+    #codigo_recuperacao
+    #codigo_recuperacao_validade
+    #tentativas_recuperacao
 
 
-    constructor(id=0, nome="", email="", senha="", nivel="", ativo="", ultimo_login="", criado=""){
+    constructor(id=0, nome="", email="", senha="", nivel="", ativo="", ultimo_login="", criado="", codigo_recuperacao="", codigo_recuperacao_validade="", tentativas_recuperacao=0){
         this.#id = id;
         this.#nome = nome;
         this.#email = email;
@@ -20,6 +23,9 @@ export default class Usuario{
         this.#ativo = ativo;
         this.#ultimo_login = ultimo_login;
         this.#criado = criado;
+        this.#codigo_recuperacao = codigo_recuperacao;
+        this.#codigo_recuperacao_validade = codigo_recuperacao_validade;
+        this.#tentativas_recuperacao = tentativas_recuperacao;
     }
 
     get id(){
@@ -86,6 +92,30 @@ export default class Usuario{
         this.#criado = novoCriado;
     }
 
+    get codigo_recuperacao(){
+        return this.#codigo_recuperacao;
+    }
+
+    set codigo_recuperacao(novoCodigo_recuperacao){
+        this.#codigo_recuperacao = novoCodigo_recuperacao;
+    }
+
+    get codigo_recuperacao_validade(){
+        return this.#codigo_recuperacao_validade;
+    }
+
+    set codigo_recuperacao_validade(novoCodigo_recuperacao_validade){
+        this.#codigo_recuperacao_validade = novoCodigo_recuperacao_validade;
+    }
+
+    get tentativas_recuperacao(){
+        return this.#tentativas_recuperacao;
+    }
+
+    set tentativas_recuperacao(novoTentativas_recuperacao){
+        this.#tentativas_recuperacao = novoTentativas_recuperacao;
+    }
+
     toJSON(){
         return {
             id:this.#id,
@@ -97,6 +127,14 @@ export default class Usuario{
             ultimo_login:this.#ultimo_login,
             criado:this.#criado
         }
+    }
+
+    toJSONEmail() {
+        return {
+            email: this.#email,
+            nome: this.#nome,
+            nivel: this.#nivel
+        };
     }
 
     async gravar(conexao){
@@ -113,9 +151,34 @@ export default class Usuario{
         const usuarioDAO = new UsuarioDAO();
         await usuarioDAO.atualizar(this, conexao);
     }
+
+    async atualizarCodigoRecuperacao(conexao){
+        const usuarioDAO = new UsuarioDAO();
+        await usuarioDAO.atualizarCodigoRecuperacao(this, conexao);
+    }
+
+    async atualizarLogin(conexao){
+        const usuarioDAO = new UsuarioDAO();
+        await usuarioDAO.atualizarLogin(this, conexao);
+    }
+
+    async atualizarSenha(conexao){
+        const usuarioDAO = new UsuarioDAO();
+        await usuarioDAO.atualizarSenha(this, conexao);
+    }
  
     async consultar(parametro, conexao){
         const usuarioDAO = new UsuarioDAO();
         return await usuarioDAO.consultar(this, parametro, conexao);
+    }
+
+    async consultarEmail(parametro, conexao){
+        const usuarioDAO = new UsuarioDAO();
+        return await usuarioDAO.consultarEmail(this, parametro, conexao);
+    }
+
+    async validarCodigoRecuperacao(conexao){
+        const usuarioDAO = new UsuarioDAO();
+        return await usuarioDAO.validarCodigoRecuperacao(this, conexao);
     }
 }

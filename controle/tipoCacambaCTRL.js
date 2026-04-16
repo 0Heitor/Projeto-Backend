@@ -1,7 +1,7 @@
-import Cacamba from '../modelo/cacamba.js';
+import tipoCacamba from "../modelo/tipoCacamba.js";
 import conectar from "../persistencia/conexao.js";
 
-export default class CacambaCTRL{
+export default class TipoCacambaCTRL{
     
     async gravar(requisicao, resposta){
         const conexao = await conectar();
@@ -9,46 +9,46 @@ export default class CacambaCTRL{
             resposta.type("application/json");
             if(requisicao.method === "POST" && requisicao.is('application/json')){
                 const dados = requisicao.body;
-                const numero = dados.numero;
-                const tamanho = dados.tamanho;
-                const status = dados.status;
-                const modelo = dados.modelo;
-                //const ultima_revisao = dados.ultima_revisao;
+                const nome = dados.nome;
+                const volume = dados.volume;
+                const preco = dados.preco;
+                const descricao = dados.descricao;
                 const ativo = dados.ativo;
-                if(numero && tamanho && status && modelo && ativo !== undefined){
-                    const cacamba = new Cacamba(0, numero, tamanho, status, modelo, /*ultima_revisao*/ "", ativo, "", "");
-                    cacamba.gravar(conexao).then(()=>{
+                if(nome && volume && preco && descricao && ativo !== undefined){
+                    const tipo = new tipoCacamba(0, nome, volume, preco, descricao, ativo, "", "");
+                    tipo.gravar(conexao).then(()=>{
                         resposta.status(200).json({
                             "status":true,
-                            "codigoGerado":cacamba.id,
-                            "mensagem":"Caçamba incluída com sucesso !"
+                            "codigoGerado":tipo.id,
+                            "mensagem":"Tipo de Caçamba incluída com sucesso !"
                         })
                     }).catch((erro) => {
                         resposta.status(500).json({
                             "status":false,
-                            "mensagem":"Erro ao registrar a Caçamba: "+erro.message
+                            "mensagem":"Erro ao registrar o Tipo de Caçamba: "+erro.message
                         })
                     });
                 }
                 else{
                     resposta.status(400).json({
                         "status":false,
-                        "mensagem":"Por favor informe as informações necessárias para a Caçamba !"
+                        "mensagem":"Por favor informe as informações necessárias para o Tipo de Caçamba !"
                     });
-                }  
+                }
             }
             else{
                 resposta.status(400).json({
                     "status":false,
-                    "mensagem":"Por favor informe o metodo POST para cadastrar uma Caçamba !"
+                    "mensagem":"Por favor informe o metodo POST para cadastrar um Tipo de Caçamba !"
                 });
             }
         }
         catch(error){
-            console.error("Erro ao gravar a Caçamba", error);
+            console.error("Erro ao gravar o Tipo de Caçamba", error);
             throw error;
         }
         finally{conexao.release();}
+
     }
 
     async alterar(requisicao, resposta){
@@ -58,44 +58,43 @@ export default class CacambaCTRL{
             if((requisicao.method === "PUT" || requisicao.method === "PATCH") && requisicao.is('application/json')){
                 const dados = requisicao.body;
                 const id = dados.id;
-                const numero = dados.numero;
-                const tamanho = dados.tamanho;
-                const status = dados.status;
-                const modelo = dados.modelo;
-                const ultima_revisao = dados.ultima_revisao;
+                const nome = dados.nome;
+                const volume = dados.volume;
+                const preco = dados.preco;
+                const descricao = dados.descricao;
                 const ativo = dados.ativo;
-                const atualizada_em = dados.atualizada_em;
-                if(id && numero && tamanho && status && modelo && ultima_revisao && atualizada_em && ativo !== undefined){
-                    const cacamba = new Cacamba(id, numero, tamanho, status, modelo, ultima_revisao, ativo, new Date().toISOString(), "");
-                    cacamba.alterar(conexao).then(()=>{
+                if(id && nome && volume && preco && descricao && ativo !== undefined){
+                    const tipo = new tipoCacamba(id, nome, volume, preco, descricao, ativo, new Date().toISOString(), "");
+                    tipo.alterar(conexao).then(()=>{
                         resposta.status(200).json({
                             "status":true,
-                            "mensagem":"Caçamba alterada com sucesso !"
+                            "codigoAlterado":tipo.id,
+                            "mensagem":"Tipo de Caçamba alterada com sucesso !"
                         })
                     }).catch((erro) => {
                         resposta.status(500).json({
                             "status":false,
-                            "mensagem":"Erro ao alterar a Caçamba: "+erro.message
+                            "mensagem":"Erro ao alterar o Tipo de Caçamba: "+erro.message
                         })
                     });
                 }
                 else{
                     resposta.status(400).json({
                         "status":false,
-                        "mensagem":"Por favor informe os dados necessários para alterar a Caçamba !"
+                        "mensagem":"Por favor informe as informações necessárias para o Tipo de Caçamba !"
                     });
-                }  
+                }
             }
             else{
                 resposta.status(400).json({
                     "status":false,
-                    "mensagem":"Por favor informe o metodo PUT para alterar uma Caçamba !"
+                    "mensagem":"Por favor informe o metodo PUT ou PATCH para alterar um Tipo de Caçamba !"
                 });
             }
         }
         catch(error){
-            console.error("Erro ao alterar a Caçamba", error);
-            throw error;    
+            console.error("Erro ao alterar o Tipo de Caçamba", error);
+            throw error;
         }
         finally{conexao.release();}
     }
@@ -108,35 +107,35 @@ export default class CacambaCTRL{
                 const dados = requisicao.body;
                 const id = dados.id;
                 if(id){
-                    const cacamba = new Cacamba(id, "", "", "", "", "", "", "");
-                    cacamba.excluir(conexao).then(()=>{
+                    const tipo = new tipoCacamba(id, "", 0, 0, "", "", "", "");
+                    tipo.excluir(conexao).then(()=>{
                         resposta.status(200).json({
                             "status":true,
-                            "mensagem":"Caçamba deletado com sucesso !"
+                            "mensagem":"Tipo de Caçamba excluída com sucesso !"
                         })
                     }).catch((erro) => {
                         resposta.status(500).json({
                             "status":false,
-                            "mensagem":"Erro ao deletar a Caçamba: "+erro.message
+                            "mensagem":"Erro ao excluir o Tipo de Caçamba: "+erro.message
                         })
                     });
                 }
                 else{
                     resposta.status(400).json({
                         "status":false,
-                        "mensagem":"Por favor informe o codigo da Caçamba !"
+                        "mensagem":"Por favor informe o ID do Tipo de Caçamba a ser excluído !"
                     });
-                }  
+                }
             }
             else{
                 resposta.status(400).json({
                     "status":false,
-                    "mensagem":"Por favor informe o metodo DELETE para deletar uma Caçamba !"
+                    "mensagem":"Por favor informe o metodo DELETE para excluir um Tipo de Caçamba !"
                 });
             }
         }
         catch(error){
-            console.error("Erro ao excluir a Caçamba", error);
+            console.error("Erro ao excluir o Tipo de Caçamba", error);
             throw error;
         }
         finally{conexao.release();}
@@ -147,16 +146,14 @@ export default class CacambaCTRL{
         try{
             resposta.type("application/json");
             if(requisicao.method === "POST" && requisicao.is('application/json')){
-                const dados = requisicao.body;
                 const filtros = [ "limit", "offset", "consulta"];
+                const dados = requisicao.body;
                 const id = dados.id;
-                const numero = dados.numero;
-                const tamanho = dados.tamanho;
-                const status = dados.status;
-                const modelo = dados.modelo;
-                //const ultima_revisao = dados.ultima_revisao;
+                const nome = dados.nome;
+                const volume = dados.volume;
+                const preco = dados.preco;
                 const ativo = dados.ativo;
-                //const atualizada_em = dados.atualizada_em;
+                const descricao = dados.descricao;
                 let filtroFinal = {};
                 for(const i in filtros){
                     if(filtros[i] == "limit" || filtros[i] == "offset")
@@ -164,32 +161,46 @@ export default class CacambaCTRL{
                     else
                         filtroFinal[filtros[i]] = dados[filtros[i]];
                 }
-                if(numero || ativo !== undefined){
-                    const cacamba = new Cacamba(id, numero, tamanho, status, modelo, "", ativo, "", "");
-                    cacamba.consultar(filtroFinal, conexao).then((resultado) => {
-                        resposta.status(200).json({
-                            "status":true,
-                            "mensagem":"Caçamba consultado com sucesso !",
-                            "listaCacambas": resultado.lista,
-                            "totalRegistros": resultado.total
-                        })
+                if(nome || volume || descricao || ativo !== undefined){
+                    const tipo = new tipoCacamba(id, nome, volume, preco, descricao, ativo, "", "");
+                    tipo.consultar(filtroFinal, conexao).then((resultado)=>{
+                        if(resultado){
+                            resposta.status(200).json({
+                                "status":true,
+                                "mensagem":"Tipos de Caçambas consultado com sucesso !",
+                                "listaTiposCacambas": resultado.lista,
+                                "totalRegistros": resultado.total
+                            })
+                        }
+                        else{
+                            resposta.status(404).json({
+                                "status":false,
+                                "mensagem":"Tipo de Caçamba não encontrada !"
+                            })
+                        }
                     }).catch((erro) => {
                         resposta.status(500).json({
                             "status":false,
-                            "mensagem":"Erro ao consultar a Caçamba: "+erro.message
+                            "mensagem":"Erro ao consultar o Tipo de Caçamba: "+erro.message
                         })
                     });
                 }
                 else{
                     resposta.status(400).json({
                         "status":false,
-                        "mensagem":"Por favor informe o numero da Caçamba !"
+                        "mensagem":"Por favor informe o ID do Tipo de Caçamba a ser consultado !"
                     });
                 }
             }
-        } 
+            else{
+                resposta.status(400).json({
+                    "status":false,
+                    "mensagem":"Por favor informe o metodo GET para consultar um Tipo de Caçamba !"
+                });
+            }
+        }
         catch(error){
-            console.error("Erro ao consultar a Caçamba", error);
+            console.error("Erro ao consultar o Tipo de Caçamba", error);
             throw error;
         }
         finally{conexao.release();}

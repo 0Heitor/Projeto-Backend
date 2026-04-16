@@ -4,8 +4,8 @@ export default class UsuarioDAO{
 
     async gravar(usuario, conexao){
         if(usuario instanceof Usuario){
-            const sql = "INSERT INTO usuarios (usu_nome, usu_email, usu_senha, usu_nivel, usu_ativo, usu_ultimo_login) VALUES ($1, $2, $3, $4, $5, $6) RETURNING usu_id";
-            const parametros = [usuario.nome, usuario.email, usuario.senha, usuario.nivel, usuario.ativo, usuario.ultimo_login];
+            const sql = "INSERT INTO usuarios (usu_nome, usu_email, usu_senha, usu_nivel, usu_ativo) VALUES ($1, $2, $3, $4, $5) RETURNING usu_id";
+            const parametros = [usuario.nome, usuario.email, usuario.senha, usuario.nivel, usuario.ativo];
             const retorno = await conexao.query(sql, parametros);
             usuario.id = retorno.rows[0].usu_id;
         }
@@ -15,6 +15,30 @@ export default class UsuarioDAO{
         if(usuario instanceof Usuario){
             const sql = "UPDATE usuarios SET usu_nome = $1, usu_email = $2, usu_senha = $3, usu_nivel = $4, usu_ativo = $5, usu_ultimo_login = $6 WHERE usu_id = $7";
             const parametros = [usuario.nome, usuario.email, usuario.senha, usuario.nivel, usuario.ativo, usuario.ultimo_login, usuario.id];
+            await conexao.query(sql, parametros);
+        }
+    }
+
+    async atualizarCodigoRecuperacao(usuario, conexao){
+        if(usuario instanceof Usuario){
+            const sql = "UPDATE usuarios SET usu_codigo_recuperacao = $1, usu_codigo_recuperacao_validade = $2, usu_tentativas_recuperacao = $3 WHERE usu_email = $4";
+            const parametros = [usuario.codigo_recuperacao, usuario.codigo_recuperacao_validade, usuario.tentativas_recuperacao, usuario.email];
+            await conexao.query(sql, parametros);
+        }
+    }
+
+    async atualizarLogin(usuario, conexao){
+        if(usuario instanceof Usuario){
+            const sql = "UPDATE usuarios SET usu_ultimo_login = $1 WHERE usu_email = $2";
+            const parametros = [usuario.ultimo_login, usuario.email];
+            await conexao.query(sql, parametros);
+        }
+    }
+
+    async atualizarSenha(usuario, conexao){
+        if(usuario instanceof Usuario){
+            const sql = "UPDATE usuarios SET usu_senha = $1 WHERE usu_email = $2";
+            const parametros = [usuario.senha, usuario.email];
             await conexao.query(sql, parametros);
         }
     }
@@ -95,7 +119,7 @@ export default class UsuarioDAO{
         const registros = resultado.rows;
         totalRegistros = registros.length > 0 ? parseInt(registros[0].total_geral) : 0;
         for(const registro of registros){
-            const usuario = new Usuario(registro.usu_id, registro.usu_nome, registro.usu_email, registro.usu_senha, registro.usu_nivel, registro.usu_ativo, registro.usu_ultimo_login, registro.usu_criado_em);
+            const usuario = new Usuario(registro.usu_id, registro.usu_nome, registro.usu_email, registro.usu_senha, registro.usu_nivel, registro.usu_ativo, registro.usu_ultimo_login, registro.usu_criado_em, "", "", 0);
             listaUsuarios.push(usuario);
         }
         return{
@@ -103,156 +127,106 @@ export default class UsuarioDAO{
             total: totalRegistros
         };
     }
-}
 
-/*
-
-import Usuario from '../modelo/usuario.js';
-import conectar from "./conexao.js";
-
-export default class UsuarioDAO{
-
-    async gravar(usuario, conexao){
-        if(usuario instanceof Usuario){
-            //const conexao = await conectar();
-            try{
-                //, usu_ultimo_login, usu_criado_em
-                const sql = "INSERT INTO usuarios (usu_nome, usu_email, usu_senha, usu_nivel, usu_ativo, usu_ultimo_login) VALUES ($1, $2, $3, $4, $5, $6) RETURNING usu_id";
-                const parametros = [usuario.nome, usuario.email, usuario.senha, usuario.nivel, usuario.ativo, usuario.ultimo_login];//, usuario.criado];
-                const retorno = await conexao.query(sql, parametros);
-                usuario.id = retorno.rows[0].usu_id;
-            } 
-            catch(erro){
-                console.error("Erro ao gravar usuario:", erro);
-                throw erro;
-            }
-            finally{
-                conexao.release();
-            }
-        }
-    }
-
-    async atualizar(usuario, conexao){
-        if(usuario instanceof Usuario){
-            //const conexao = await conectar();
-            try{
-                //usu_criado_em = $7
-                const sql = "UPDATE usuarios SET usu_nome = $1, usu_email = $2, usu_senha = $3, usu_nivel = $4, usu_ativo = $5, usu_ultimo_login = $6 WHERE usu_id = $7";
-                const parametros = [usuario.nome, usuario.email, usuario.senha, usuario.nivel, usuario.ativo, usuario.ultimo_login, usuario.id];//, usuario.criado
-
-                await conexao.query(sql, parametros);
-            } 
-            catch(erro){
-                console.error("Erro ao atualizar usuário:", erro);
-                throw erro;
-            } 
-            finally{
-                conexao.release();
-            }
-        }
-    }
-
-    async excluir(usuario, conexao){
-        if(usuario instanceof Usuario){
-            //const conexao = await conectar();
-            try{
-                const sql = "DELETE FROM usuarios WHERE usu_id = $1";
-                const parametros = [usuario.id];
-                
-                await conexao.query(sql, parametros);
-            } 
-            catch(erro){
-                console.error("Erro ao excluir usuário:", erro);
-                throw erro;
-            } 
-            finally{
-                conexao.release();
-            }
-        }
-    }
-
-    async consultar(filtro, conexao){
+    async consultarEmail(usuario, filtro, conexao){
         let sql="SELECT *, COUNT(*) OVER() as total_geral FROM usuarios WHERE 1=1";
         let parametros=[];
-        let i=1;
-
-        if(filtro.id && filtro.id !== ''){
-            sql += ` AND usu_id = $${i}`;
-            parametros.push(filtro.id);
-            i++;
-        }
-        if(filtro.nome && filtro.nome !== ''){
-            sql += ` AND usu_nome LIKE $${i}`;
-            parametros.push(`%${filtro.nome}%`);
-            i++;
-        }
-        if(filtro.email && filtro.email !== ''){
-            if(filtro.consulta && filtro.consulta == "equal"){
-                sql += ` AND usu_email = $${i}`;
-                parametros.push(filtro.email);
-            }
-            else{
-                sql += ` AND usu_email LIKE $${i}`;
-                parametros.push(`%${filtro.email}%`);
-            }
-            i++;
-        }
-        if(filtro.senha && filtro.senha !== ''){
-            sql += ` AND usu_senha = $${i}`;
-            parametros.push(`%${filtro.senha}%`);
-            i++;
-        }
-        if(filtro.nivel && filtro.nivel !== ''){
-            sql += ` AND usu_nivel LIKE $${i}`;
-            parametros.push(`%${filtro.nivel}%`);
-            i++;
-        }
-        if(filtro.ativo !== undefined && filtro.ativo != ''){
-            sql += ` AND usu_ativo = $${i}`;
-            parametros.push(filtro.ativo);
-            i++;
-        }
-        if(filtro.ultimo_login){
-            sql += ` AND usu_ultimo_login >= $${i}`;
-            parametros.push(filtro.ultimo_login);
-            i++;
-        }
-        if(filtro.criado){
-            sql += ` AND usu_criado_em::date = $${i}`;
-            parametros.push(filtro.criado);
-            i++;
-        }
-        sql += " ORDER BY usu_nome ASC";
-        sql += ` LIMIT $${i} OFFSET $${i + 1}`;
-
-        parametros.push(parseInt(filtro.limit));
-        parametros.push(parseInt(filtro.offset));
-
-        //const conexao = await conectar();
         let listaUsuarios = [];
         let totalRegistros = 0;
-        try{
-            const resultado = await conexao.query(sql, parametros);
-            const registros = resultado.rows;
-            totalRegistros = registros.length > 0 ? parseInt(registros[0].total_geral) : 0;
-            for(const registro of registros){
-                const usuario = new Usuario(registro.usu_id, registro.usu_nome, registro.usu_email, registro.usu_senha, registro.usu_nivel, registro.usu_ativo, registro.usu_ultimo_login, registro.usu_criado_em);
-                listaUsuarios.push(usuario);
-            }
-        } 
-        catch(erro) {
-            console.error("Erro na consulta:", erro);
-            throw erro;
+        let i=1;
+
+        if(usuario.email && usuario.email !== ''){
+            sql += ` AND usu_email = $${i}`;
+            parametros.push(usuario.email);
+            i++;
         }
-        finally{
-            conexao.release();
+        if(usuario.senha && usuario.senha !== ''){
+            sql += ` AND usu_senha = $${i}`;
+            parametros.push(usuario.senha);
+            i++;
+        }
+        sql += " AND usu_ativo = true";
+        sql += " ORDER BY usu_nome ASC";
+
+        const resultado = await conexao.query(sql, parametros);
+        const registros = resultado.rows;
+        totalRegistros = registros.length > 0 ? parseInt(registros[0].total_geral) : 0;
+        for(const registro of registros){
+            const usuario = new Usuario(registro.usu_id, registro.usu_nome, registro.usu_email, registro.usu_senha, registro.usu_nivel, registro.usu_ativo, registro.usu_ultimo_login, registro.usu_criado_em, "", "", 0);
+            listaUsuarios.push(usuario);
         }
         return{
             lista: listaUsuarios,
-            total: totalRegistros
+            total: totalRegistros,
+            encontrado: totalRegistros == 1 
         };
     }
+
+    async validarCodigoRecuperacao(usuario, conexao){
+        const sql = "SELECT * FROM usuarios WHERE usu_email = $1";
+        const resultado = await conexao.query(sql, [usuario.email]);
+        
+        if (resultado.rows.length === 0) {
+            return { encontrado: false, motivo: "usuario_nao_encontrado" };
+        }
+
+        const registro = resultado.rows[0];
+        const userDB = new Usuario(
+            registro.usu_id, registro.usu_nome, registro.usu_email, 
+            registro.usu_senha, registro.usu_nivel, registro.usu_ativo, 
+            registro.usu_ultimo_login, registro.usu_criado_em, 
+            registro.usu_codigo_recuperacao, registro.usu_codigo_recuperacao_validade, 
+            registro.usu_tentativas_recuperacao
+        );
+
+        const agora = new Date();
+        const validade = new Date(userDB.codigo_recuperacao_validade);
+
+        // Verificações lógicas
+        const tentativasEsgotadas = userDB.tentativas_recuperacao < 0;
+        const codigoIncorreto = userDB.codigo_recuperacao !== usuario.codigo_recuperacao;
+        const expirado = validade < agora;
+
+        return {
+            encontrado: !codigoIncorreto && !expirado && !tentativasEsgotadas,
+            usuarioInstancia: userDB,
+            motivo: tentativasEsgotadas ? "tentativas_esgotadas" : 
+                    expirado ? "expirado" : 
+                    codigoIncorreto ? "codigo_errado" : null
+        };
+        
+        /*let sql="SELECT *, COUNT(*) OVER() as total_geral FROM usuarios WHERE 1=1";
+        let parametros=[];
+        let listaUsuarios = [];
+        let totalRegistros = 0;
+        let i=1;
+
+        if(usuario.email && usuario.email !== ''){
+            sql += ` AND usu_email = $${i}`;
+            parametros.push(usuario.email);
+            i++;
+        }
+        if(usuario.codigo_recuperacao && usuario.codigo_recuperacao !== ''){
+            sql += ` AND usu_codigo_recuperacao = $${i}`;
+            parametros.push(usuario.codigo_recuperacao);
+            i++;
+        }
+        sql += " AND usu_codigo_recuperacao_validade >= NOW()";
+        sql += " AND usu_tentativas_recuperacao > 0";
+        sql += " ORDER BY usu_nome ASC";
+
+        const resultado = await conexao.query(sql, parametros);
+        const registros = resultado.rows;
+        totalRegistros = registros.length > 0 ? parseInt(registros[0].total_geral) : 0;
+        for(const registro of registros){
+            const usuario = new Usuario(registro.usu_id, registro.usu_nome, registro.usu_email, registro.usu_senha, registro.usu_nivel, registro.usu_ativo, registro.usu_ultimo_login, registro.usu_criado_em, registro.usu_codigo_recuperacao, registro.usu_codigo_recuperacao_validade, registro.usu_tentativas_recuperacao);
+            listaUsuarios.push(usuario);
+        }
+        return{
+            lista: listaUsuarios,
+            total: totalRegistros,
+            encontrado: totalRegistros == 1,
+            expirado: totalRegistros == 1 ? listaUsuarios[0].codigo_recuperacao_validade < new Date() : false,
+        };*/
+    }
 }
-
-
-*/
