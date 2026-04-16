@@ -3,9 +3,9 @@ import dotenv from 'dotenv';
 import https from 'https';
 import { createRequire } from 'module';
 
-const require = createRequire(import.meta.url);
-const sslRootCas = require('ssl-root-cas').create();
-https.globalAgent.options.ca = sslRootCas;
+//const require = createRequire(import.meta.url);
+//const sslRootCas = require('ssl-root-cas').create();
+//https.globalAgent.options.ca = sslRootCas;
 dotenv.config();
 
 export async function enviarEmailRecuperacao(emailUsuario) {
@@ -13,7 +13,7 @@ export async function enviarEmailRecuperacao(emailUsuario) {
 
     const transporter = nodemailer.createTransport({
         host: "smtp.gmail.com",
-        port: 2525,
+        port: 587,
         secure: false,
         auth: {
             user: process.env.EMAIL_USER,
@@ -22,9 +22,11 @@ export async function enviarEmailRecuperacao(emailUsuario) {
         tls: {
             rejectUnauthorized: false
         },
-        connectionTimeout: 10000,
-        greetingTimeout: 10000,   // Espera 10 segundos pela saudação do servidor
-        socketTimeout: 20000,
+        connectionTimeout: 5000,
+        greetingTimeout: 5000,
+        socketTimeout: 10000,
+        debug: true,
+        logger: true
     });
 
     const mailOptions = {
