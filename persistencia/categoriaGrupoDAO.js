@@ -34,49 +34,38 @@ export default class CategoriaGrupoDAO{
         let totalRegistros = 0;
         let i=1;
 
-        /*if(usuario.id && usuario.id !== ''){
-            sql += ` AND usu_id = $${i}`;
-            parametros.push(usuario.id);
+        if(categoria.id && categoria.id !== ''){
+            sql += ` AND grp_id = $${i}`;
+            parametros.push(categoria.id);
             i++;
         }
-        if(usuario.nome && usuario.nome !== ''){
-            sql += ` AND usu_nome LIKE $${i}`;
-            parametros.push(`%${usuario.nome}%`);
+        if(categoria.nome && categoria.nome !== ''){
+            sql += ` AND grp_nome LIKE $${i}`;
+            parametros.push(`%${categoria.nome}%`);
             i++;
         }
-        if(usuario.email && usuario.email !== ''){
-            if(filtro.consulta && filtro.consulta == "equal"){
-                sql += ` AND usu_email = $${i}`;
-                parametros.push(usuario.email);
-            }
-            else{
-                sql += ` AND usu_email LIKE $${i}`;
-                parametros.push(`%${usuario.email}%`);
-            }
+        if(categoria.margem_lucro && categoria.margem_lucro !== ''){
+            sql += ` AND grp_margem_lucro_sugerida = $${i}`;
+            parametros.push(`%${categoria.margem_lucro}%`);
             i++;
         }
-        if(usuario.senha && usuario.senha !== ''){
-            sql += ` AND usu_senha = $${i}`;
-            parametros.push(`%${usuario.senha}%`);
+        if(categoria.comissao_padrao && categoria.comissao_padrao !== ''){
+            sql += ` AND grp_comissao_padrao = $${i}`;
+            parametros.push(`%${categoria.comissao_padrao}%`);
             i++;
         }
-        if(usuario.nivel && usuario.nivel !== ''){
-            sql += ` AND usu_nivel LIKE $${i}`;
-            parametros.push(`%${usuario.nivel}%`);
+        if(categoria.ativo !== undefined && categoria.ativo != ''){
+            sql += ` AND grp_ativo = $${i}`;
+            parametros.push(categoria.ativo);
             i++;
         }
-        if(usuario.ativo !== undefined && usuario.ativo != ''){
-            sql += ` AND usu_ativo = $${i}`;
-            parametros.push(usuario.ativo);
+        if(categoria.atualizado && categoria.atualizado != ""){
+            sql += ` AND grp_atualizado_em::date = $${i}`;
+            parametros.push(filtro.atualizado);
             i++;
         }
-        if(usuario.ultimo_login && usuario.ultimo_login != ""){
-            sql += ` AND usu_ultimo_login >= $${i}`;
-            parametros.push(filtro.ultimo_login);
-            i++;
-        }
-        if(usuario.criado && usuario.criado != ""){
-            sql += ` AND usu_criado_em::date = $${i}`;
+        if(categoria.criado && categoria.criado != ""){
+            sql += ` AND grp_criado_em::date = $${i}`;
             parametros.push(filtro.criado);
             i++;
         }
@@ -89,7 +78,7 @@ export default class CategoriaGrupoDAO{
         if(filtro.offset && filtro.offset != ""){
             sql += ` OFFSET $${i}`
             parametros.push(parseInt(filtro.offset));
-        }*/
+        }
 
         const resultado = await conexao.query(sql, parametros);
         const registros = resultado.rows;

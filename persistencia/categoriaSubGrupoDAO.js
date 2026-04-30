@@ -29,59 +29,54 @@ export default class CategoriaSubGrupoDAO{
     }
 
     async consultar(categoria, filtro, conexao){
-        let sql="SELECT *, COUNT(*) OVER() as total_geral FROM categorias_subgrupo WHERE 1=1";
+        let sql="SELECT s.*, g.*, COUNT(*) OVER() as total_geral FROM categorias_subgrupo s INNER JOIN categorias_grupo g ON s.sub_grp_id = g.grp_id WHERE 1=1";
         let parametros=[];
         let listaCategorias = [];
         let totalRegistros = 0;
         let i=1;
 
-        /*if(usuario.id && usuario.id !== ''){
-            sql += ` AND usu_id = $${i}`;
-            parametros.push(usuario.id);
+        if(categoria.id && categoria.id !== ''){
+            sql += ` AND s.sub_id = $${i}`;
+            parametros.push(categoria.id);
             i++;
         }
-        if(usuario.nome && usuario.nome !== ''){
-            sql += ` AND usu_nome LIKE $${i}`;
-            parametros.push(`%${usuario.nome}%`);
+        if(categoria.nome && categoria.nome !== ''){
+            sql += ` AND s.sub_nome LIKE $${i}`;
+            parametros.push(`%${categoria.nome}%`);
             i++;
         }
-        if(usuario.email && usuario.email !== ''){
+        if(categoria.ncm_padrao && categoria.ncm_padrao !== ''){
             if(filtro.consulta && filtro.consulta == "equal"){
-                sql += ` AND usu_email = $${i}`;
-                parametros.push(usuario.email);
+                sql += ` AND s.sub_ncm_padrao = $${i}`;
+                parametros.push(categoria.ncm_padrao);
             }
             else{
-                sql += ` AND usu_email LIKE $${i}`;
-                parametros.push(`%${usuario.email}%`);
+                sql += ` AND s.sub_ncm_padrao LIKE $${i}`;
+                parametros.push(`%${categoria.ncm_padrao}%`);
             }
             i++;
         }
-        if(usuario.senha && usuario.senha !== ''){
-            sql += ` AND usu_senha = $${i}`;
-            parametros.push(`%${usuario.senha}%`);
+        if(categoria.localizacao && categoria.localizacao !== ''){
+            sql += ` AND s.sub_localizacao_padrao = $${i}`;
+            parametros.push(`%${categoria.localizacao}%`);
             i++;
         }
-        if(usuario.nivel && usuario.nivel !== ''){
-            sql += ` AND usu_nivel LIKE $${i}`;
-            parametros.push(`%${usuario.nivel}%`);
+        if(categoria.ativo !== undefined && categoria.ativo != ''){
+            sql += ` AND s.sub_ativo = $${i}`;
+            parametros.push(categoria.ativo);
             i++;
         }
-        if(usuario.ativo !== undefined && usuario.ativo != ''){
-            sql += ` AND usu_ativo = $${i}`;
-            parametros.push(usuario.ativo);
+        if(categoria.atualizado && categoria.atualizado != ""){
+            sql += ` AND s.sub_atualizado_em ::date = $${i}`;
+            parametros.push(filtro.atualizado);
             i++;
         }
-        if(usuario.ultimo_login && usuario.ultimo_login != ""){
-            sql += ` AND usu_ultimo_login >= $${i}`;
-            parametros.push(filtro.ultimo_login);
-            i++;
-        }
-        if(usuario.criado && usuario.criado != ""){
-            sql += ` AND usu_criado_em::date = $${i}`;
+        if(categoria.criado && categoria.criado != ""){
+            sql += ` AND s.sub_criado_em::date = $${i}`;
             parametros.push(filtro.criado);
             i++;
-        }*/
-        sql += " ORDER BY usu_nome ASC";
+        }
+        sql += " ORDER BY s.sub_nome ASC";
         if(filtro.limit && filtro.limit != ""){
             sql += ` LIMIT $${i}`;
             parametros.push(parseInt(filtro.limit));
@@ -96,10 +91,8 @@ export default class CategoriaSubGrupoDAO{
         const registros = resultado.rows;
         totalRegistros = registros.length > 0 ? parseInt(registros[0].total_geral) : 0;
         for(const registro of registros){
-            //Fazer uma busca por id em Categoriagrupo
-            const categoriagrupo = new Categoriagrupo(registro.sub_grp_id, "", "", "", "", "", "");
-            const grupo = await categoriagrupo.consultar({}, conexao);
-            const categoria = new Categoriasubgrupo(registro.sub_id, registro.sub_nome, registro.sub_ncm_padrao, registro.sub_localizacao_padrao, registro.sub_ativo, registro.sub_atualizado_em, registro.sub_criado_em, grupo.listaCategorias);
+            const categoriagrupo = new Categoriagrupo(registro.grp_id, registro.grp_nome, registro.grp_margem_lucro_sugerida, registro.grp_comissao_padrao, registro.grp_ativo, registro.grp_atualizado_em, registro.grp_criado_em);
+            const categoria = new Categoriasubgrupo(registro.sub_id, categoriagrupo, registro.sub_nome, registro.sub_ncm_padrao, registro.sub_localizacao_padrao, registro.sub_ativo, registro.sub_atualizado_em, registro.sub_criado_em);
             listaCategorias.push(categoria);
         }
         return{

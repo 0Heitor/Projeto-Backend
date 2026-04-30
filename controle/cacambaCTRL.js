@@ -9,14 +9,16 @@ export default class CacambaCTRL{
             resposta.type("application/json");
             if(requisicao.method === "POST" && requisicao.is('application/json')){
                 const dados = requisicao.body;
+                const tipoCacamba = dados.tipoCacamba;
                 const numero = dados.numero;
-                const tamanho = dados.tamanho;
+                //const tamanho = dados.tamanho;
                 const status = dados.status;
                 const modelo = dados.modelo;
+                const endereco_atual = dados.endereco_atual;
                 //const ultima_revisao = dados.ultima_revisao;
                 const ativo = dados.ativo;
-                if(numero && tamanho && status && modelo && ativo !== undefined){
-                    const cacamba = new Cacamba(0, numero, tamanho, status, modelo, /*ultima_revisao*/ "", ativo, "", "");
+                if(tipoCacamba && numero /*&& tamanho*/ && status && modelo && endereco_atual && ativo !== undefined){
+                    const cacamba = new Cacamba(0, tipoCacamba, numero/*, tamanho*/, status, modelo, endereco_atual,/*ultima_revisao*/ "", ativo, "", "");
                     cacamba.gravar(conexao).then(()=>{
                         resposta.status(200).json({
                             "status":true,
@@ -58,15 +60,16 @@ export default class CacambaCTRL{
             if((requisicao.method === "PUT" || requisicao.method === "PATCH") && requisicao.is('application/json')){
                 const dados = requisicao.body;
                 const id = dados.id;
+                const tipoCacamba = dados.tipoCacamba;
                 const numero = dados.numero;
-                const tamanho = dados.tamanho;
+                //const tamanho = dados.tamanho;
                 const status = dados.status;
                 const modelo = dados.modelo;
-                const ultima_revisao = dados.ultima_revisao;
+                const endereco_atual = dados.endereco_atual;
+                const ultima_revisao = (dados.ultima_revisao && dados.ultima_revisao !== "") ? dados.ultima_revisao : null;
                 const ativo = dados.ativo;
-                const atualizada_em = dados.atualizada_em;
-                if(id && numero && tamanho && status && modelo && ultima_revisao && atualizada_em && ativo !== undefined){
-                    const cacamba = new Cacamba(id, numero, tamanho, status, modelo, ultima_revisao, ativo, new Date().toISOString(), "");
+                if(id && tipoCacamba && numero /*&& tamanho*/ && status && modelo && endereco_atual && ultima_revisao !== undefined && ativo !== undefined){
+                    const cacamba = new Cacamba(id, tipoCacamba, numero/*, tamanho*/, status, modelo, endereco_atual, ultima_revisao, ativo, new Date().toISOString(), "");
                     cacamba.alterar(conexao).then(()=>{
                         resposta.status(200).json({
                             "status":true,
@@ -108,7 +111,7 @@ export default class CacambaCTRL{
                 const dados = requisicao.body;
                 const id = dados.id;
                 if(id){
-                    const cacamba = new Cacamba(id, "", "", "", "", "", "", "");
+                    const cacamba = new Cacamba(id, {}, "", "", "", "", "", "", "", "");
                     cacamba.excluir(conexao).then(()=>{
                         resposta.status(200).json({
                             "status":true,
@@ -150,10 +153,12 @@ export default class CacambaCTRL{
                 const dados = requisicao.body;
                 const filtros = [ "limit", "offset", "consulta"];
                 const id = dados.id;
+                const tipoCacamba = dados.tipoCacamba;
                 const numero = dados.numero;
-                const tamanho = dados.tamanho;
+                //const tamanho = dados.tamanho;
                 const status = dados.status;
                 const modelo = dados.modelo;
+                const endereco_atual = dados.endereco_atual;
                 //const ultima_revisao = dados.ultima_revisao;
                 const ativo = dados.ativo;
                 //const atualizada_em = dados.atualizada_em;
@@ -165,7 +170,7 @@ export default class CacambaCTRL{
                         filtroFinal[filtros[i]] = dados[filtros[i]];
                 }
                 if(numero || ativo !== undefined){
-                    const cacamba = new Cacamba(id, numero, tamanho, status, modelo, "", ativo, "", "");
+                    const cacamba = new Cacamba(id, {}, numero/*, tamanho*/, status, modelo, endereco_atual , "", ativo, "", "");
                     cacamba.consultar(filtroFinal, conexao).then((resultado) => {
                         resposta.status(200).json({
                             "status":true,

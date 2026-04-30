@@ -2,22 +2,26 @@ import CacambaDAO from '../persistencia/cacambaDAO.js';
 
 export default class Cacamba{
     #id
+    #tipoCacamba
     #numero
-    #tamanho
+    //#tamanho
     #status
     #modelo
+    #endereco_atual
     #ultima_revisao
     #ativo
     #atualizado_em
     #criado_em
 
 
-    constructor(id=0, numero="", tamanho="", status="", modelo="", ultima_revisao="", ativo="", atualizado_em="", criado_em=""){
+    constructor(id=0, tipoCacamba={}, numero=""/*, tamanho=""*/, status="", modelo="", endereco_atual="", ultima_revisao="", ativo="", atualizado_em="", criado_em=""){
         this.#id = id;
+        this.#tipoCacamba = tipoCacamba;
         this.#numero = numero;
-        this.#tamanho = tamanho;
+        //this.#tamanho = tamanho;
         this.#status = status;
         this.#modelo = modelo;
+        this.#endereco_atual = endereco_atual;
         this.#ultima_revisao = ultima_revisao;
         this.#ativo = ativo;
         this.#atualizado_em = atualizado_em;
@@ -32,6 +36,14 @@ export default class Cacamba{
         this.#id = novoId;
     }
 
+    get tipoCacamba(){
+        return this.#tipoCacamba;
+    }
+
+    set tipoCacamba(novoTipoCacamba){
+        this.#tipoCacamba = novoTipoCacamba;
+    }
+
     get numero(){
         return this.#numero;
     }
@@ -40,13 +52,13 @@ export default class Cacamba{
         this.#numero = novoNumero;
     }
 
-    get tamanho(){
+    /*get tamanho(){
         return this.#tamanho;
     }
 
     set tamanho(novoTamanho){
         this.#tamanho = novoTamanho;
-    }
+    }*/
 
     get status(){
         return this.#status;
@@ -62,6 +74,14 @@ export default class Cacamba{
 
     set modelo(novoModelo){
         this.#modelo = novoModelo;
+    }
+
+    get endereco_atual(){
+        return this.#endereco_atual;
+    }
+
+    set endereco_atual(novoEnderecoAtual){
+        this.#endereco_atual = novoEnderecoAtual;
     }
 
     get ultima_revisao(){
@@ -99,13 +119,15 @@ export default class Cacamba{
     toJSON(){
         return {
             id:this.#id,
+            tipoCacamba:this.#tipoCacamba.toJSON(),
             numero:this.#numero,
-            tamanho:this.#tamanho,
+            //tamanho:this.#tamanho,
             status:this.#status,
             modelo:this.#modelo,
+            endereco_atual:this.#endereco_atual,
             ultima_revisao:this.#ultima_revisao,
             ativo:this.#ativo,
-            atualizada_em:this.#atualizado_em,
+            atualizado_em:this.#atualizado_em,
             criado_em:this.#criado_em
         }
     }

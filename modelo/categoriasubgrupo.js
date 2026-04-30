@@ -10,15 +10,15 @@ export default class Categoriasubgrupo{
     #atualizado
     #criado
 
-    constructor(id=0, nome="", ncm_padrao="", localizacao="", ativo="", atualizado="", criado="", categoriagrupo={}){
+    constructor(id=0, categoriagrupo={}, nome="", ncm_padrao="", localizacao="", ativo="", atualizado="", criado=""){
         this.#id = id;
+        this.#categoriagrupo = categoriagrupo;
         this.#nome = nome;
         this.#ncm_padrao = ncm_padrao;
         this.#localizacao = localizacao;
         this.#ativo = ativo;
         this.#atualizado = atualizado;
         this.#criado = criado;
-        this.#categoriagrupo = categoriagrupo;
     }
 
     get id(){
@@ -27,6 +27,14 @@ export default class Categoriasubgrupo{
 
     set id(novoId){
         this.#id = novoId;
+    }
+
+    get categoriagrupo(){
+        return this.#categoriagrupo;
+    }
+
+    set categoriagrupo(novoCategoriagrupo){
+        this.#categoriagrupo = novoCategoriagrupo;
     }
 
     get nome(){
@@ -75,14 +83,6 @@ export default class Categoriasubgrupo{
 
     set criado(novoCriado){
         this.#criado = novoCriado;
-    }
-
-    get categoriagrupo(){
-        return this.#categoriagrupo;
-    }
-
-    set categoriagrupo(novoCategoriagrupo){
-        this.#categoriagrupo = novoCategoriagrupo;
     }
 
     toJSON(){

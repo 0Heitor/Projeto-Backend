@@ -16,7 +16,7 @@ export default class CategoriaSubGrupoCTRL{
                 const ativo = dados.ativo;
 
                 if(categoriagrupo && nome && ncm_padrao && localizacao && ativo !== undefined){
-                    const categoriasubgrupo = new Categoriasubgrupo(0, nome, ncm_padrao, localizacao, ativo, "", "", categoriagrupo);
+                    const categoriasubgrupo = new Categoriasubgrupo(0, categoriagrupo, nome, ncm_padrao, localizacao, ativo, "", "");
                     categoriasubgrupo.gravar(conexao).then(()=>{
                         resposta.status(200).json({
                             "status":true,
@@ -64,7 +64,7 @@ export default class CategoriaSubGrupoCTRL{
                 const localizacao = dados.localizacao;
                 const ativo = dados.ativo;
                 if(id && categoriagrupo && nome && ncm_padrao && localizacao && ativo !== undefined){
-                    const categoriasubgrupo = new Categoriasubgrupo(0, nome, ncm_padrao, localizacao, ativo, new Date().toISOString(), "", categoriagrupo);
+                    const categoriasubgrupo = new Categoriasubgrupo(0, categoriagrupo, nome, ncm_padrao, localizacao, ativo, new Date().toISOString(), "");
                     categoriasubgrupo.alterar(conexao).then(()=>{
                         resposta.status(200).json({
                             "status":true,
@@ -106,7 +106,7 @@ export default class CategoriaSubGrupoCTRL{
                 const dados = requisicao.body;
                 const id = dados.id;
                 if(id){
-                    const categoriasubgrupo = new Categoriasubgrupo(id, "", "", "", "", "", "", {});
+                    const categoriasubgrupo = new Categoriasubgrupo(id, {}, "", "", "", "", "", "");
                     categoriasubgrupo.excluir(conexao).then(()=>{
                         resposta.status(200).json({
                             "status":true,
@@ -161,7 +161,7 @@ export default class CategoriaSubGrupoCTRL{
                         filtroFinal[filtros[i]] = dados[filtros[i]];
                 }
                 if(ativo !== undefined){
-                    const categoriasubgrupo = new Categoriasubgrupo(id, nome, ncm_padrao, localizacao, ativo, "", "", categoriagrupo);
+                    const categoriasubgrupo = new Categoriasubgrupo(id, categoriagrupo, nome, ncm_padrao, localizacao, ativo, "", "");
                     categoriasubgrupo.consultar(filtroFinal, conexao).then((resultado) => {
                         resposta.status(200).json({
                             "status":true,
