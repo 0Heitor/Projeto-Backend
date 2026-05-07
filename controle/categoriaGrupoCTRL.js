@@ -156,8 +156,8 @@ export default class CategoriaGrupoCTRL{
                     else
                         filtroFinal[filtros[i]] = dados[filtros[i]];
                 }
-                if(ativo !== undefined){
-                    const categoriagrupo = new Categoriagrupo(id, nome, margem_lucro, comissao_padrao, ativo, "", "");
+                if(nome || ativo !== undefined){
+                    const categoriagrupo = new Categoriagrupo(0, nome, "", "", ativo, "", "");
                     categoriagrupo.consultar(filtroFinal, conexao).then((resultado) => {
                         resposta.status(200).json({
                             "status":true,

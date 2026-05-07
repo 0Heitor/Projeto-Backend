@@ -5,7 +5,7 @@ export default class CategoriaSubGrupoDAO{
 
     async gravar(categoria, conexao){
         if(categoria instanceof Categoriasubgrupo){
-            const sql = "INSERT INTO categorias_subgrupo (sub_nome, sub_ncm_padrao, sub_localizacao_padrao, sub_ativo, sub_atualizado_em, sub_criado_em, sub_grp_id) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING sub_id";
+            const sql = "INSERT INTO categorias_subgrupo (sub_nome, sub_ncm_padrao, sub_localizacao_padrao, sub_ativo, sub_grp_id) VALUES ($1, $2, $3, $4, $5) RETURNING sub_id";
             const parametros = [categoria.nome, categoria.ncm_padrao, categoria.localizacao, categoria.ativo, categoria.categoriagrupo.id];
             const retorno = await conexao.query(sql, parametros);
             categoria.id = retorno.rows[0].sub_id;

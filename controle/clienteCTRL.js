@@ -22,7 +22,7 @@ export default class ClienteCTRL{
                 const observacoes = dados.observacoes;
                 if(nome && cpf_cnpj && rg && data_nascimento && profissao && local_trabalho && telefone && cep && endereco && ativo !== undefined && observacoes){
                     const cliente = new Cliente(0, nome, cpf_cnpj, rg, data_nascimento, profissao, local_trabalho, telefone, cep, endereco, ativo, observacoes, "");
-                    cliente.gravar().then(()=>{
+                    cliente.gravar(conexao).then(()=>{
                         resposta.status(200).json({
                             "status":true,
                             "codigoGerado":cliente.id,
@@ -76,7 +76,7 @@ export default class ClienteCTRL{
                 const observacoes = dados.observacoes;
                 if(id && nome && cpf_cnpj && rg && data_nascimento && profissao && local_trabalho && telefone && cep && endereco && ativo !== undefined && observacoes){
                     const cliente = new Cliente(id, nome, cpf_cnpj, rg, data_nascimento, profissao, local_trabalho, telefone, cep, endereco, ativo, observacoes, "");
-                    cliente.alterar().then(()=>{
+                    cliente.alterar(conexao).then(()=>{
                         resposta.status(200).json({
                             "status":true,
                             "mensagem":"Cliente alterada com sucesso !"
@@ -119,7 +119,7 @@ export default class ClienteCTRL{
                 const id = dados.id;
                 if(id){
                     const cliente = new Cliente(id, "", "", "", "", "", "", "", "", "", "", "", "");
-                    cliente.excluir().then(()=>{
+                    cliente.excluir(conexao).then(()=>{
                         resposta.status(200).json({
                             "status":true,
                             "mensagem":"Cliente deletado com sucesso !"
@@ -180,7 +180,7 @@ export default class ClienteCTRL{
                 }
                 if(ativo !== undefined){
                     const cliente = new Cliente(id, nome, cpf_cnpj, rg, data_nascimento, profissao, local_trabalho, telefone, cep, endereco, ativo, observacoes, "");
-                    cliente.consultar(filtroFinal).then((resultado) => {
+                    cliente.consultar(filtroFinal, conexao).then((resultado) => {
                         resposta.status(200).json({
                             "status":true,
                             "mensagem":"Cliente consultado com sucesso !",

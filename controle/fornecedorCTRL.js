@@ -20,7 +20,7 @@ export default class FornecedorCTRL{
                 const ativo = dados.ativo;
                 if(codigo && nome_fantasia && cnpj && telefone && uf && cidade && bairro && endereco && ativo !== undefined){
                     const fornecedor = new Fornecedor(0, codigo, nome_fantasia, cnpj, telefone, uf, cidade, bairro, endereco, ativo, "");
-                    fornecedor.gravar().then(()=>{
+                    fornecedor.gravar(conexao).then(()=>{
                         resposta.status(200).json({
                             "status":true,
                             "codigoGerado":fornecedor.id,
@@ -72,7 +72,7 @@ export default class FornecedorCTRL{
                 const ativo = dados.ativo;
                 if(id && codigo && nome_fantasia && cnpj && telefone && uf && cidade && bairro && endereco && ativo !== undefined){
                     const fornecedor = new Fornecedor(id, codigo, nome_fantasia, cnpj, telefone, uf, cidade, bairro, endereco, ativo, "");
-                    fornecedor.alterar().then(()=>{
+                    fornecedor.alterar(conexao).then(()=>{
                         resposta.status(200).json({
                             "status":true,
                             "mensagem":"Fornecedor alterada com sucesso !"
@@ -113,8 +113,8 @@ export default class FornecedorCTRL{
                 const dados = requisicao.body;
                 const id = dados.id;
                 if(id){
-                    const fornecedor = new Fornecedor(id, 0, "", "", "", "", "", "", "", "", "");
-                    fornecedor.excluir().then(()=>{
+                    const fornecedor = new Fornecedor(id, "", "", "", "", "", "", "", "", "", "");
+                    fornecedor.excluir(conexao).then(()=>{
                         resposta.status(200).json({
                             "status":true,
                             "mensagem":"Fornecedor deletado com sucesso !"
@@ -172,9 +172,9 @@ export default class FornecedorCTRL{
                     else
                         filtroFinal[filtros[i]] = dados[filtros[i]];
                 }
-                if(ativo !== undefined){
-                    const fornecedor = new Fornecedor(id, codigo, nome_fantasia, cnpj, telefone, uf, cidade, bairro, endereco, ativo, "");
-                    fornecedor.consultar(filtroFinal).then((resultado) => {
+                if(codigo || cnpj || nome_fantasia || ativo !== undefined){
+                    const fornecedor = new Fornecedor(0, codigo, nome_fantasia, cnpj, "", "", "", "", "", ativo, "");
+                    fornecedor.consultar(filtroFinal, conexao).then((resultado) => {
                         resposta.status(200).json({
                             "status":true,
                             "mensagem":"Fornecedor consultado com sucesso !",

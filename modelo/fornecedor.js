@@ -13,7 +13,7 @@ export default class Fornecedor{
     #criado
     #ativo
 
-    constructor(id=0, codigo=0, nome_fantasia="", cnpj="", telefone="", uf="", cidade="", bairro="", endereco="", ativo="", criado=""){
+    constructor(id=0, codigo="", nome_fantasia="", cnpj="", telefone="", uf="", cidade="", bairro="", endereco="", ativo="", criado=""){
         this.#id = id;
         this.#codigo = codigo;
         this.#nome_fantasia = nome_fantasia;

@@ -84,7 +84,7 @@ export default class CategoriaGrupoDAO{
         const registros = resultado.rows;
         totalRegistros = registros.length > 0 ? parseInt(registros[0].total_geral) : 0;
         for(const registro of registros){
-            const categoria = new Categoriagrupo(registro.grp_id, registro.grp_nome, registro.grp_margem_lucro_sugerida, registro.grp_comissao_padrao, registro.grp_ativo, registro.grp_atualizada_em, registro.grp_criado_em);
+            const categoria = new Categoriagrupo(registro.grp_id, registro.grp_nome, registro.grp_margem_lucro_sugerida, registro.grp_comissao_padrao, registro.grp_ativo, registro.grp_atualizado_em, registro.grp_criado_em);
             listaCategorias.push(categoria);
         }
         return{
