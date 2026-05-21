@@ -18,14 +18,13 @@ export default class ProdutoCTRL{
                 const unidade_medida = dados.unidade_medida;
                 const preco_custo = dados.preco_custo;
                 const preco_venda = dados.preco_venda;
-                const margem_lucro = dados.margem_lucro;
                 const percentual_financeiro = dados.percentual_financeiro;
                 const tributacao = dados.tributacao;
                 const estoque = dados.estoque;
+                const estoque_minimo = dados.estoque_minimo;
                 const ativo = dados.ativo;
-
-                if(categoriasubgrupo && fornecedor && codigo && codigo_de_barras && descricao && descricao_marca && unidade_medida && preco_custo && preco_venda && margem_lucro && percentual_financeiro && tributacao && estoque && ativo !== undefined){
-                    const produto = new Produto(0, categoriasubgrupo, fornecedor, codigo, codigo_de_barras, descricao, descricao_marca, unidade_medida, preco_custo, preco_venda, margem_lucro, percentual_financeiro, tributacao, estoque, ativo, "", "");
+                if(categoriasubgrupo && fornecedor && codigo && codigo_de_barras && descricao && descricao_marca && unidade_medida && preco_custo && preco_venda && percentual_financeiro && tributacao && estoque && estoque_minimo && ativo !== undefined){
+                    const produto = new Produto(0, categoriasubgrupo, fornecedor, codigo, codigo_de_barras, descricao, descricao_marca, unidade_medida, preco_custo, preco_venda, percentual_financeiro, tributacao, estoque, estoque_minimo, ativo, "", "");
                     produto.gravar(conexao).then(()=>{
                         resposta.status(200).json({
                             "status":true,
@@ -76,14 +75,14 @@ export default class ProdutoCTRL{
                 const unidade_medida = dados.unidade_medida;
                 const preco_custo = dados.preco_custo;
                 const preco_venda = dados.preco_venda;
-                const margem_lucro = dados.margem_lucro;
                 const percentual_financeiro = dados.percentual_financeiro;
                 const tributacao = dados.tributacao;
                 const estoque = dados.estoque;
+                const estoque_minimo = dados.estoque_minimo;
                 const ativo = dados.ativo;
 
-                if(id && categoriasubgrupo && fornecedor && codigo && codigo_de_barras && descricao && descricao_marca && unidade_medida && preco_custo && preco_venda && margem_lucro && percentual_financeiro && tributacao && estoque && ativo !== undefined){
-                    const produto = new Produto(0, categoriasubgrupo, fornecedor, codigo, codigo_de_barras, descricao, descricao_marca, unidade_medida, preco_custo, preco_venda, margem_lucro, percentual_financeiro, tributacao, estoque, ativo, new Date().toISOString(), "");
+                if(id && categoriasubgrupo && fornecedor && codigo && codigo_de_barras && descricao && descricao_marca && unidade_medida && preco_custo && preco_venda && percentual_financeiro && tributacao && estoque && estoque_minimo && ativo !== undefined){
+                    const produto = new Produto(id, categoriasubgrupo, fornecedor, codigo, codigo_de_barras, descricao, descricao_marca, unidade_medida, preco_custo, preco_venda, percentual_financeiro, tributacao, estoque, estoque_minimo, ativo, new Date().toISOString(), "");
                     produto.alterar(conexao).then(()=>{
                         resposta.status(200).json({
                             "status":true,
@@ -125,7 +124,7 @@ export default class ProdutoCTRL{
                 const dados = requisicao.body;
                 const id = dados.id;
                 if(id){
-                    const produto = new Produto(id, {}, {}, "", "", "", "", "", 0, 0, 0, 0, 0, 0, "", "", "");
+                    const produto = new Produto(id, {}, {}, "", "", "", "", "", 0, 0, 0, 0, 0, 0, 0, "", "", "");
                     produto.excluir(conexao).then(()=>{
                         resposta.status(200).json({
                             "status":true,
@@ -167,7 +166,10 @@ export default class ProdutoCTRL{
                 const dados = requisicao.body;
                 const filtros = [ "limit", "offset", "consulta"];
                 const id = dados.id;
-                const categoriasubgrupo = dados.categoriasubgrupo;
+                const codigo = dados.codigo;
+                const codigo_de_barras = dados.codigo_de_barras;
+                const descricao = dados.descricao;
+                /*const categoriasubgrupo = dados.categoriasubgrupo;
                 const fornecedor = dados.fornecedor;
                 const codigo = dados.codigo;
                 const codigo_de_barras = dados.codigo_de_barras;
@@ -176,10 +178,10 @@ export default class ProdutoCTRL{
                 const unidade_medida = dados.unidade_medida;
                 const preco_custo = dados.preco_custo;
                 const preco_venda = dados.preco_venda;
-                const margem_lucro = dados.margem_lucro;
                 const percentual_financeiro = dados.percentual_financeiro;
                 const tributacao = dados.tributacao;
                 const estoque = dados.estoque;
+                const estoque_minimo = dados.estoque_minimo;*/
                 const ativo = dados.ativo;
                 //const ultimo_login = dados.ultimo_login;
                 let filtroFinal = {};
@@ -189,8 +191,8 @@ export default class ProdutoCTRL{
                     else
                         filtroFinal[filtros[i]] = dados[filtros[i]];
                 }
-                if(id && categoriasubgrupo && fornecedor && codigo && codigo_de_barras && descricao && descricao_marca && unidade_medida && preco_custo && preco_venda && margem_lucro && percentual_financeiro && tributacao && estoque && ativo !== undefined){
-                    const produto = new Produto(id, categoriasubgrupo, fornecedor, codigo, codigo_de_barras, descricao, descricao_marca, unidade_medida, preco_custo, preco_venda, margem_lucro, percentual_financeiro, tributacao, estoque, ativo, "", "");
+                if(id || codigo || codigo_de_barras || descricao || ativo !== undefined){
+                    const produto = new Produto(id, {}, {}, codigo, codigo_de_barras, descricao, "", "", 0, 0, 0, 0, 0, 0, ativo, "", "");
                     produto.consultar(filtroFinal, conexao).then((resultado) => {
                         resposta.status(200).json({
                             "status":true,

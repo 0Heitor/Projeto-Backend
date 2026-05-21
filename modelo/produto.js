@@ -11,16 +11,15 @@ export default class Produto{
     #unidade_medida
     #preco_custo
     #preco_venda
-    #margem_lucro
     #percentual_financeiro
     #tributacao
     #estoque
+    #estoque_minimo
     #ativo
     #atualizado
     #criado
 
-
-    constructor(id=0, categoriasubgrupo={}, fornecedor={}, codigo="", codigo_de_barras="", descricao="", descricao_marca="", unidade_medida="", preco_custo=0, preco_venda=0, margem_lucro=0, percentual_financeiro=0, tributacao=0, estoque=0, ativo="", atualizado="", criado=""){
+    constructor(id=0, categoriasubgrupo={}, fornecedor={}, codigo="", codigo_de_barras="", descricao="", descricao_marca="", unidade_medida="", preco_custo=0, preco_venda=0, percentual_financeiro=0, tributacao=0, estoque=0, estoque_minimo=0, ativo="", atualizado="", criado=""){
         this.#id = id;
         this.#categoriasubgrupo = categoriasubgrupo;
         this.#fornecedor = fornecedor;
@@ -31,10 +30,10 @@ export default class Produto{
         this.#unidade_medida = unidade_medida;
         this.#preco_custo = preco_custo;
         this.#preco_venda = preco_venda;
-        this.#margem_lucro = margem_lucro;
         this.#percentual_financeiro = percentual_financeiro;
         this.#tributacao = tributacao;
-        this.#estoque = estoque;
+        this.#estoque = estoque
+        this.#estoque_minimo = estoque_minimo;
         this.#ativo = ativo;
         this.#atualizado = atualizado;
         this.#criado = criado;
@@ -120,14 +119,6 @@ export default class Produto{
         this.#preco_venda = novoPreco_venda;
     }
 
-    get margem_lucro(){
-        return this.#margem_lucro;
-    }
-
-    set margem_lucro(novoMargem_lucro){
-        this.#margem_lucro = novoMargem_lucro;
-    }
-
     get percentual_financeiro(){
         return this.#percentual_financeiro;
     }
@@ -150,6 +141,14 @@ export default class Produto{
 
     set estoque(novoEstoque){
         this.#estoque = novoEstoque;
+    }
+
+    get estoque_minimo(){
+        return this.#estoque_minimo;
+    }
+
+    set estoque_minimo(novoEstoqueMinimo){
+        this.#estoque_minimo = novoEstoqueMinimo;
     }
 
     get ativo(){
@@ -188,10 +187,10 @@ export default class Produto{
             unidade_medida:this.#unidade_medida,
             preco_custo:this.#preco_custo,
             preco_venda:this.#preco_venda,
-            margem_lucro:this.#margem_lucro,
             percentual_financeiro:this.#percentual_financeiro,
             tributacao:this.#tributacao,
             estoque:this.#estoque,
+            estoque_minimo:this.#estoque_minimo,
             ativo:this.#ativo,
             atualizado:this.#atualizado,
             criado:this.#criado
@@ -211,6 +210,11 @@ export default class Produto{
     async alterar(conexao){
         const produtoDAO = new ProdutoDAO();
         await produtoDAO.atualizar(this, conexao);
+    }
+
+    async atualizarEstoque(conexao, quantidade){
+        const produtoDAO = new ProdutoDAO;
+        await produtoDAO.atualizarEstoque(this, quantidade, conexao);
     }
  
     async consultar(parametro, conexao){

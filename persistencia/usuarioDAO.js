@@ -119,7 +119,7 @@ export default class UsuarioDAO{
         const registros = resultado.rows;
         totalRegistros = registros.length > 0 ? parseInt(registros[0].total_geral) : 0;
         for(const registro of registros){
-            const usuario = new Usuario(registro.usu_id, registro.usu_nome, registro.usu_email, registro.usu_senha, registro.usu_nivel, registro.usu_ativo, registro.usu_ultimo_login, registro.usu_criado_em, "", "", 0);
+            const usuario = new Usuario(registro.usu_id, registro.usu_nome, registro.usu_email, "", registro.usu_nivel, registro.usu_ativo, registro.usu_ultimo_login, registro.usu_criado_em, "", "", 0);
             listaUsuarios.push(usuario);
         }
         return{

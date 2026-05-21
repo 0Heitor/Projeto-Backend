@@ -6,8 +6,8 @@ export default class ProdutoDAO{
 
     async gravar(produto, conexao){
         if(produto instanceof Produto){
-            const sql = "INSERT INTO produtos (usu_nome, usu_email, usu_senha, usu_nivel, usu_ativo, usu_ultimo_login) VALUES ($1, $2, $3, $4, $5, $6) RETURNING prod_id";
-            const parametros = [produto.nome, produto.email, produto.senha, produto.nivel, produto.ativo, produto.ultimo_login];
+            const sql = "INSERT INTO produtos (prod_sub_id, prod_fornecedor_id, prod_codigo_interno, prod_codigo_barras, prod_descricao, prod_descricao_marca, prod_unidade_medida, prod_custo, prod_preco_venda, prod_percentual_financeiro, prod_tributacao, prod_ativo) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING prod_id";
+            const parametros = [produto.categoriasubgrupo.id, produto.fornecedor.id, produto.codigo, produto.codigo_de_barras, produto.descricao, produto.descricao_marca, produto.unidade_medida, produto.preco_custo, produto.preco_venda, produto.percentual_financeiro, produto.tributacao, produto.ativo];
             const retorno = await conexao.query(sql, parametros);
             produto.id = retorno.rows[0].prod_id;
         }
@@ -15,9 +15,18 @@ export default class ProdutoDAO{
 
     async atualizar(produto, conexao){
         if(produto instanceof Produto){
-            const sql = "UPDATE produtos SET usu_nome = $1, usu_email = $2, usu_senha = $3, usu_nivel = $4, usu_ativo = $5, usu_ultimo_login = $6 WHERE prod_id = $7";
-            const parametros = [produto.nome, produto.email, produto.senha, produto.nivel, produto.ativo, produto.ultimo_login, produto.id];
+            const sql = "UPDATE produtos SET prod_sub_id = $1, prod_fornecedor_id = $2, prod_codigo_interno = $3, prod_codigo_barras = $4, prod_descricao = $5, prod_descricao_marca = $6, prod_unidade_medida = $7, prod_custo = $8, prod_preco_venda = $9, prod_percentual_financeiro = $10, prod_tributacao = $11, prod_estoque = $12, prod_estoque_minimo = $13, prod_ativo = $14, prod_atualizado_em = $15 WHERE prod_id = $16";
+            const parametros = [produto.categoriasubgrupo.id, produto.fornecedor.id, produto.codigo, produto.codigo_de_barras, produto.descricao, produto.descricao_marca, produto.unidade_medida, produto.preco_custo, produto.preco_venda, produto.percentual_financeiro, produto.tributacao, produto.estoque, produto.estoque_minimo, produto.ativo, produto.atualizado, produto.id];
             await conexao.query(sql, parametros);
+        }
+    }
+
+    async atualizarEstoque(produto, quantidade, conexao){
+        if(produto instanceof Produto){
+            const sql = "UPDATE produtos SET prod_estoque = prod_estoque + $1, prod_atualizado_em = CURRENT_TIMESTAMP WHERE prod_id = $2 AND (prod_estoque + $1) >= 0";
+            const parametros = [quantidade, produto.id];
+            /*const resultado = */await conexao.query(sql, parametros);
+            //return{atualizado: resultado.rowCount === 0};
         }
     }
 
@@ -36,52 +45,40 @@ export default class ProdutoDAO{
         let totalRegistros = 0;
         let i=1;
 
-        /*if(produto.id && produto.id !== ''){
-            sql += ` AND usu_id = $${i}`;
+        if (produto.id && produto.id !== '') {
+            sql += ` AND prod_id = $${i}`;
             parametros.push(produto.id);
             i++;
         }
-        if(produto.nome && produto.nome !== ''){
-            sql += ` AND usu_nome LIKE $${i}`;
-            parametros.push(`%${produto.nome}%`);
+        if (produto.codigo && produto.codigo !== '') {
+            sql += ` AND prod_codigo_interno = $${i}`;
+            parametros.push(produto.codigo);
             i++;
         }
-        if(produto.email && produto.email !== ''){
-            if(filtro.consulta && filtro.consulta == "equal"){
-                sql += ` AND usu_email = $${i}`;
-                parametros.push(produto.email);
-            }
-            else{
-                sql += ` AND usu_email LIKE $${i}`;
-                parametros.push(`%${produto.email}%`);
-            }
+        if (produto.descricao && produto.descricao !== '') {
+            sql += ` AND prod_descricao LIKE $${i}`;
+            parametros.push(`%${produto.descricao}%`);
             i++;
         }
-        if(produto.senha && produto.senha !== ''){
-            sql += ` AND usu_senha = $${i}`;
-            parametros.push(`%${produto.senha}%`);
+        if (produto.codigo_barras && produto.codigo_barras !== '') {
+            sql += ` AND prod_codigo_barras = $${i}`;
+            parametros.push(produto.codigo_barras);
             i++;
         }
-        if(produto.nivel && produto.nivel !== ''){
-            sql += ` AND usu_nivel LIKE $${i}`;
-            parametros.push(`%${produto.nivel}%`);
+        if (produto.fornecedor.id && produto.fornecedor.id !== '') {
+            sql += ` AND prod_fornecedor_id = $${i}`;
+            parametros.push(produto.fornecedor.id);
             i++;
         }
-        if(produto.ativo !== undefined && produto.ativo != ''){
-            sql += ` AND usu_ativo = $${i}`;
+        if (produto.ativo !== undefined && produto.ativo !== '') {
+            sql += ` AND prod_ativo = $${i}`;
             parametros.push(produto.ativo);
             i++;
         }
-        if(produto.ultimo_login && produto.ultimo_login != ""){
-            sql += ` AND usu_ultimo_login >= $${i}`;
-            parametros.push(filtro.ultimo_login);
-            i++;
+        if (filtro.apenas_estoque_baixo === true) {
+            sql += ` AND prod_estoque <= prod_estoque_minimo`;
         }
-        if(produto.criado && produto.criado != ""){
-            sql += ` AND usu_criado_em::date = $${i}`;
-            parametros.push(filtro.criado);
-            i++;
-        }*/
+
         sql += " ORDER BY prod_codigo_interno ASC";
         if(filtro.limit && filtro.limit != ""){
             sql += ` LIMIT $${i}`;
@@ -97,11 +94,11 @@ export default class ProdutoDAO{
         const registros = resultado.rows;
         totalRegistros = registros.length > 0 ? parseInt(registros[0].total_geral) : 0;
         for(const registro of registros){
-            const categoriasubgrupo = new Categoriasubgrupo(registro.prod_sub_id, "", "", "", "", "", "", {});
-            const subgrupo = await categoriasubgrupo.consultar({}, conexao);
-            const fornecedor = new Fornecedor(registro.prod_fornecedor_id, 0, "", "", "", "", "", "", "", "", "");
-            const forn = await fornecedor.consultar({}, conexao);
-            const produto = new Produto(registro.prod_id);
+            const categoriasubgrupo = new Categoriasubgrupo(registro.prod_sub_id, "", "", "", "", "", "", "");
+            const subgrupo = await categoriasubgrupo.consultar(categoriasubgrupo , conexao);
+            const fornecedor = new Fornecedor(registro.prod_fornecedor_id, "", "", "", "", "", "", "", "", "", "");
+            const forn = await fornecedor.consultar(fornecedor, conexao);
+            const produto = new Produto(registro.prod_id, subgrupo.lista[0], forn.lista[0], registro.prod_codigo_interno, registro.prod_codigo_barras, registro.prod_descricao, registro.prod_descricao_marca, registro.prod_unidade_medida, parseFloat(registro.prod_custo), parseFloat(registro.prod_preco_venda), parseFloat(registro.prod_percentual_financeiro), registro.prod_tributacao, parseFloat(registro.prod_estoque), parseFloat(registro.prod_estoque_minimo), registro.prod_ativo, registro.prod_atualizado_em, registro.prod_criado_em);
             listaProdutos.push(produto);
         }
         return{
@@ -109,5 +106,4 @@ export default class ProdutoDAO{
             total: totalRegistros
         };
     }
-
 }
