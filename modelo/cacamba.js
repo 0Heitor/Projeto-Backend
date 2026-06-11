@@ -146,7 +146,12 @@ export default class Cacamba{
         const cacambaDAO = new CacambaDAO();
         await cacambaDAO.atualizar(this, conexao);
     }
- 
+
+    async atualizarEstado(estado, conexao){
+        const cacambaDAO = new CacambaDAO();
+        await cacambaDAO.atualizarEstado(this, estado, conexao);
+    }
+
     async consultar(parametro, conexao){
         const cacambaDAO = new CacambaDAO();
         return await cacambaDAO.consultar(this, parametro, conexao);

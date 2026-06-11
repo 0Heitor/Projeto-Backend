@@ -30,8 +30,8 @@ export default class LocacaoCTRL{
                         for (const item of itens) {
                             const itemCacamba = new ItemCacamba(0, locacao, item.cacamba, parseFloat(item.quantidade), parseFloat(item.valor_unitario), item.data_retirada_real, item.status_item, item.ativo, "", "");
                             await itemCacamba.gravar(conexao);
-                            //const cacamba = new Cacamba(item.cacamba.id, {}, {}, "", "", "", "", "", 0, 0, 0, 0, 0, 0, "", "", "");
-                            //await cacamba.atualizarEstado(conexao, "LOCADA");
+                            const cacamba = new Cacamba(item.cacamba.id, {}, {}, "", "", "", "", "", 0, 0, 0, 0, 0, 0, "", "", "");
+                            await cacamba.atualizarEstado("ALUGADA", conexao);
                         }
                         await conexao.query('COMMIT');
 
@@ -87,10 +87,10 @@ export default class LocacaoCTRL{
                 const status = dados.status;
                 const ativo = dados.ativo;
                 const itens = dados.itens;
-                if(id && cliente && data_pedido && data_entrega && data_retirada_prevista && data_retirada_real && endereco_entrega && valor_total && status && ativo !== undefined){
+                if(id && cliente && data_pedido && data_entrega && data_retirada_prevista && /*data_retirada_real &&*/ endereco_entrega && valor_total && status && ativo !== undefined){
                     await conexao.query('BEGIN');
                     try{
-                        const locacao = new Locacao(0, cliente, itens, data_pedido, data_entrega, data_retirada_prevista, data_retirada_real, endereco_entrega, valor_total, status, ativo, new Date().toISOString(), "");
+                        const locacao = new Locacao(id, cliente, itens, data_pedido, data_entrega, data_retirada_prevista, /*data_retirada_real*/ new Date().toISOString(), endereco_entrega, valor_total, status, ativo, new Date().toISOString(), "");
                         await locacao.alterar(conexao);
                         //const idLocacaoGerado = locacao.id;
 
@@ -101,8 +101,8 @@ export default class LocacaoCTRL{
                             const itemCompra = new ItemCacamba(item.id, locacao, item.cacamba, parseFloat(item.valor_unitario), item.data_retirada_real, item.status_item, item.ativo, new Date().toISOString(), "");
                             await itemCompra.alterar(conexao);
                             // Atualiza o status da cacamba
-                            const cacamba = new Cacamba(item.produto.id, {}, {}, "", "", "", "", "", 0, 0, 0, 0, 0, 0, "", "", "");
-                            await cacamba.atualizarEstado(conexao, item.status_item);
+                            const cacamba = new Cacamba(item.cacamba.id, {}, {}, "", "", "", "", "", 0, 0, 0, 0, 0, 0, "", "", "");
+                            await cacamba.atualizarEstado(item.status, conexao);
                         }
                         await conexao.query('COMMIT');
 
@@ -157,7 +157,7 @@ export default class LocacaoCTRL{
                             const itemCacamba = new ItemCacamba(item.id, {}, {}, 0, "", "", "", "", "");
                             await itemCacamba.excluir(conexao);
                             const cacamba = new Cacamba(item.cacamba.id, {}, {}, "", "", "", "", "", 0, 0, 0, 0, 0, 0, "", "", "");
-                            await cacamba.atualizarEstado(conexao, item.status_item);
+                            await cacamba.atualizarEstado(item.cacamba.status, conexao);
                         }
 
                         //const compra = new Compra(id, [], fornecedor, data_compra, valor_total, status, ativo,  new Date().toISOString(), "");
@@ -214,7 +214,7 @@ export default class LocacaoCTRL{
                 //const usuario = dados.usuario;
                 //const data_compra = dados.data_compra;
                 //const valor_total = dados.valor_total;
-                //const status = dados.status;
+                const status = dados.status;
                 const itens = dados.itens;
                 const ativo = dados.ativo;
                 let filtroFinal = {};
@@ -224,8 +224,8 @@ export default class LocacaoCTRL{
                     else
                         filtroFinal[filtros[i]] = dados[filtros[i]];
                 }
-                if(id || cliente || ativo !== undefined){
-                    const locacao = new Locacao(id, cliente, itens, "", "", "", "", "", 0, "", ativo, "", "");
+                if(id || cliente || status || ativo !== undefined){
+                    const locacao = new Locacao(id, cliente, itens, "", "", "", "", "", 0, status, ativo, "", "");
                     locacao.consultar(filtroFinal, conexao).then((resultado) => {
                         resposta.status(200).json({
                             "status":true,

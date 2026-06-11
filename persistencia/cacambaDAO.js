@@ -20,6 +20,14 @@ export default class CacambaDAO{
         }
     }
 
+    async atualizarEstado(cacamba, estado, conexao){
+        if(cacamba instanceof Cacamba){
+            const sql = "UPDATE cacambas SET cac_status = $1 WHERE cac_id = $2";
+            const parametros = [estado, cacamba.id];
+            await conexao.query(sql, parametros);
+        }
+    }
+
     async excluir(cacamba, conexao){
         if(cacamba instanceof Cacamba){
             const sql = "DELETE FROM cacambas WHERE cac_id = $1";
