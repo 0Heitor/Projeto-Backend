@@ -12,6 +12,8 @@ import rotaProduto from "./rotas/rotaProduto.js"
 import rotaCompra from "./rotas/rotaCompra.js"
 import rotaItemCompra from "./rotas/rotaItemCompra.js"
 import rotaLocacao from "./rotas/rotaLocacao.js"
+import rotaVenda from "./rotas/rotaVenda.js"
+import rotaContaReceber from "./rotas/rotaContaReceber.js"
 
 const host = process.env.HOST;
 const porta = process.env.PORT;// || 3000;
@@ -36,6 +38,8 @@ app.use("/api/produtos", rotaProduto);
 app.use("/api/compras", rotaCompra);
 app.use("/api/itens-compra", rotaItemCompra);
 app.use("/api/locacoes", rotaLocacao);
+app.use("/api/vendas", rotaVenda);
+app.use("/api/contas-receber", rotaContaReceber);
 
 //const servidorHTTP = ViteExpress.listen(app, process.env.PORT, () => {});
 app.listen(porta, '0.0.0.0', () => {
