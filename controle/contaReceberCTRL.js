@@ -63,13 +63,21 @@ export default class ContaReceberCTRL{
             if((requisicao.method === "PUT" || requisicao.method === "PATCH") && requisicao.is('application/json')){
                 const dados = requisicao.body;
                 const id = dados.id;
-                const nome = dados.nome;
-                const volume = dados.volume;
-                const preco = dados.preco;
-                const descricao = dados.descricao;
+                const cliente = dados.cliente;
+                const origem_tipo = dados.origem_tipo;
+                const valor_total = dados.valor_total;
+                const forma_pagamento = dados.forma_pagamento;
+                const data_vencimento = dados.data_vencimento;
+                // const data_pagamento = dados.data_pagamento;
+                const status = dados.status;
                 const ativo = dados.ativo;
-                if(id && nome && volume && preco && descricao && ativo !== undefined){
-                    const conta = new contaReceber(id, cliente, origem_tipo, valor_total, forma_pagamento, data_vencimento, data_pagamento, status, ativo, new Date().toISOString(), "");
+                if(id && cliente && origem_tipo && valor_total && forma_pagamento && data_vencimento && status && ativo !== undefined){
+                    const agora = new Date();
+                    const offsetMs = agora.getTimezoneOffset() * 60000;
+                    const dataHoraLocal = new Date(agora.getTime() - offsetMs);
+
+                    const timestampParaPostgres = dataHoraLocal.toISOString().slice(0, 19).replace('T', ' ');
+                    const conta = new contaReceber(id, cliente, origem_tipo, valor_total, forma_pagamento, data_vencimento, new Date().toISOString(), status, ativo, timestampParaPostgres, "");
                     
                     await conexao.query('BEGIN');
                     try{
