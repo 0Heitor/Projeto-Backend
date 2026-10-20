@@ -3,19 +3,21 @@ import conectar from "../persistencia/conexao.js";
 
 export default class ContaReceberCTRL{
     
-    /*async gravar(requisicao, resposta){
+    async gravar(requisicao, resposta){
         const conexao = await conectar();
         try{
             resposta.type("application/json");
             if(requisicao.method === "POST" && requisicao.is('application/json')){
                 const dados = requisicao.body;
-                const nome = dados.nome;
-                const volume = dados.volume;
-                const preco = dados.preco;
+                const cliente = dados.cliente;
+                const origem_tipo = dados.origem_tipo;
+                const valor_total = dados.valor_total;
+                const forma_pagamento = dados.forma_pagamento;
                 const descricao = dados.descricao;
+                const status = dados.status;
                 const ativo = dados.ativo;
-                if(nome && volume && preco && descricao && ativo !== undefined){
-                    const conta = new contaReceber(0, cliente, origem_tipo, valor_total, forma_pagamento, data_vencimento, data_pagamento, status, ativo, "", "");
+                if(cliente && origem_tipo && valor_total && forma_pagamento && descricao && status && ativo !== undefined){
+                    const conta = new contaReceber(0, cliente, origem_tipo, valor_total, forma_pagamento, new Date().toISOString(), "", descricao, status, ativo, "", "");
                     await conexao.query('BEGIN');
                     try{
                         conta.gravar(conexao);//.then(()=>{
@@ -54,7 +56,7 @@ export default class ContaReceberCTRL{
         }
         finally{conexao.release();}
 
-    }*/
+    }
 
     async alterar(requisicao, resposta){
         const conexao = await conectar();
@@ -68,16 +70,17 @@ export default class ContaReceberCTRL{
                 const valor_total = dados.valor_total;
                 const forma_pagamento = dados.forma_pagamento;
                 const data_vencimento = dados.data_vencimento;
+                const descricao = dados.descricao;
                 // const data_pagamento = dados.data_pagamento;
                 const status = dados.status;
                 const ativo = dados.ativo;
-                if(id && cliente && origem_tipo && valor_total && forma_pagamento && data_vencimento && status && ativo !== undefined){
+                if(id && cliente && origem_tipo && valor_total && forma_pagamento && data_vencimento && descricao && status && ativo !== undefined){
                     const agora = new Date();
                     const offsetMs = agora.getTimezoneOffset() * 60000;
                     const dataHoraLocal = new Date(agora.getTime() - offsetMs);
 
                     const timestampParaPostgres = dataHoraLocal.toISOString().slice(0, 19).replace('T', ' ');
-                    const conta = new contaReceber(id, cliente, origem_tipo, valor_total, forma_pagamento, data_vencimento, new Date().toISOString(), status, ativo, timestampParaPostgres, "");
+                    const conta = new contaReceber(id, cliente, origem_tipo, valor_total, forma_pagamento, data_vencimento, new Date().toISOString(), descricao, status, ativo, timestampParaPostgres, "");
                     
                     await conexao.query('BEGIN');
                     try{
@@ -187,7 +190,7 @@ export default class ContaReceberCTRL{
                         filtroFinal[filtros[i]] = dados[filtros[i]];
                 }
                 if(cliente || data_vencimento || status || ativo !== undefined){
-                    const conta = new contaReceber(id, cliente, "", "", "", data_vencimento, "", status, ativo, "", "");
+                    const conta = new contaReceber(id, cliente, "", "", "", data_vencimento, "", "", status, ativo, "", "");
                     conta.consultar(filtroFinal, conexao).then((resultado)=>{
                         if(resultado){
                             resposta.status(200).json({

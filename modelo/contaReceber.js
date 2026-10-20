@@ -8,12 +8,13 @@ export default class ContaReceber{
     #forma_pagamento
     #data_vencimento
     #data_pagamento
+    #descricao
     #status
     #ativo
     #atualizado
     #criado
 
-    constructor(id=0, cliente={}, origem_tipo="", valor_total="", forma_pagamento="", data_vencimento="", data_pagamento="", status="", ativo="", atualizado="", criado=""){
+    constructor(id=0, cliente={}, origem_tipo="", valor_total="", forma_pagamento="", data_vencimento="", data_pagamento="", descricao="", status="", ativo="", atualizado="", criado=""){
         this.#id = id;
         this.#cliente = cliente;
         this.#origem_tipo = origem_tipo;
@@ -21,6 +22,7 @@ export default class ContaReceber{
         this.#forma_pagamento = forma_pagamento;
         this.#data_vencimento = data_vencimento;
         this.#data_pagamento = data_pagamento;
+        this.#descricao = descricao;
         this.#status = status;
         this.#ativo = ativo;
         this.#atualizado = atualizado;
@@ -83,6 +85,14 @@ export default class ContaReceber{
         this.#data_pagamento = novoData_pagamento;
     } 
 
+    get descricao(){
+        return this.#descricao;
+    }
+
+    set descricao(novoDescricao){
+        this.#descricao = novoDescricao;
+    }
+
     get status(){
         return this.#status;
     }
@@ -124,6 +134,7 @@ export default class ContaReceber{
             forma_pagamento:this.#forma_pagamento,
             data_vencimento:this.#data_vencimento,
             data_pagamento:this.#data_pagamento,
+            descricao:this.#descricao,
             status:this.#status,
             ativo:this.#ativo,
             atualizado:this.#atualizado,

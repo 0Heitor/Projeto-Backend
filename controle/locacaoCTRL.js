@@ -1,6 +1,7 @@
 import Locacao from '../modelo/locacao.js';
 import ItemCacamba from '../modelo/itemCacamba.js';
 import Cacamba from '../modelo/cacamba.js';
+import contaReceber from '../modelo/contaReceber.js';
 import conectar from "../persistencia/conexao.js";
 
 export default class LocacaoCTRL{
@@ -85,8 +86,16 @@ export default class LocacaoCTRL{
                 const endereco_entrega = dados.endereco_entrega;
                 const valor_total = dados.valor_total;
                 const status = dados.status;
+                const status_conta = dados.status_conta;
                 const ativo = dados.ativo;
+                const ativo_conta = dados.ativo_conta;
                 const itens = dados.itens;
+
+
+                // const origem_tipo = dados.origem_tipo;
+                const forma_pagamento = dados.forma_pagamento;
+                const descricao = dados.descricao;
+                const data_vencimento = dados.data_vencimento;
                 if(id && cliente && data_pedido && data_entrega && data_retirada_prevista && /*data_retirada_real &&*/ endereco_entrega && valor_total && status && ativo !== undefined){
                     await conexao.query('BEGIN');
                     try{
@@ -104,6 +113,8 @@ export default class LocacaoCTRL{
                             const cacamba = new Cacamba(item.cacamba.id, {}, {}, "", "", "", "", "", 0, 0, 0, 0, 0, 0, "", "", "");
                             await cacamba.atualizarEstado(item.status, conexao);
                         }
+                        const conta = new contaReceber(0, cliente, "LOCAÇÃO", valor_total, forma_pagamento, data_vencimento, "", descricao, status_conta, ativo_conta, "", "");
+                        conta.gravar(conexao);
                         await conexao.query('COMMIT');
 
                         resposta.status(200).json({
