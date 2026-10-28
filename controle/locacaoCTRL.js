@@ -113,8 +113,14 @@ export default class LocacaoCTRL{
                             const cacamba = new Cacamba(item.cacamba.id, {}, {}, "", "", "", "", "", 0, 0, 0, 0, 0, 0, "", "", "");
                             await cacamba.atualizarEstado(item.status, conexao);
                         }
-                        const conta = new contaReceber(0, cliente, "LOCAÇÃO", valor_total, forma_pagamento, data_vencimento, "", descricao, status_conta, ativo_conta, "", "");
-                        conta.gravar(conexao);
+                        if(status == "CONCLUIDA"){
+                            let conta;
+                            if(status_conta == "PAGO")
+                                conta = new contaReceber(0, cliente, "LOCAÇÃO", valor_total, forma_pagamento, data_vencimento, new Date().toISOString(), descricao, status_conta, ativo_conta, "", "");
+                            else
+                                conta = new contaReceber(0, cliente, "LOCAÇÃO", valor_total, forma_pagamento, data_vencimento, "", descricao, status_conta, ativo_conta, "", "");
+                            conta.gravar(conexao);
+                        }
                         await conexao.query('COMMIT');
 
                         resposta.status(200).json({
