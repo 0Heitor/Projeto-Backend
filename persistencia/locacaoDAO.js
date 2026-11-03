@@ -14,8 +14,8 @@ export default class LocacaoDAO{
 
     async atualizar(locacao, conexao){
         if(locacao instanceof Locacao){
-            const sql = "UPDATE locacoes SET loc_cli_id = $1, loc_data_entrega = $2, loc_data_retirada_prevista = $3, loc_data_retirada_real = $4, loc_endereco_entrega = $5, loc_valor_total = $6, loc_status = $7, loc_ativo = $8 WHERE loc_id = $9";
-            const parametros = [locacao.cliente.id, locacao.data_entrega, locacao.data_retirada_prevista, locacao.data_retirada_real, locacao.endereco_entrega, locacao.valor_total, locacao.status, locacao.ativo, locacao.id];
+            const sql = "UPDATE locacoes SET loc_cli_id = $1, loc_data_entrega = $2, loc_data_retirada_prevista = $3, loc_data_retirada_real = $4, loc_endereco_entrega = $5, loc_valor_total = $6, loc_status = $7, loc_ativo = $8, loc_atualizado_em = $9 WHERE loc_id = $10";
+            const parametros = [locacao.cliente.id, locacao.data_entrega, locacao.data_retirada_prevista, locacao.data_retirada_real, locacao.endereco_entrega, locacao.valor_total, locacao.status, locacao.ativo, locacao.atualizado_em, locacao.id];
             await conexao.query(sql, parametros);
         }
     }
@@ -100,7 +100,7 @@ export default class LocacaoDAO{
         for(const registro of registros){
             //const usuario = new Usuario(registro.usu_id, registro.usu_nome, registro.usu_email, "", registro.usu_nivel, registro.usu_ativo, registro.usu_ultimo_login, registro.usu_criado_em, "", "", 0);
             const cliente = new Cliente(registro.cli_id, registro.cli_nome, registro.cli_cpf_cnpj, registro.cli_rg, registro.cli_data_nascimento, registro.cli_profissao, registro.cli_local_trabalho, registro.cli_telefone, registro.cli_cep, registro.cli_endereco, registro.cli_ativo, registro.cli_observacoes, registro.cli_criado_em);
-            const itenscacamba = new ItemCacamba(0, {id: registro.loc_id}, {}, 0, "", "", "", "", "");
+            const itenscacamba = new ItemCacamba(0, {id: registro.loc_id}, {}, 0, registro.loc_data_retirada_real, "", "", "", "");
             const item = await itenscacamba.consultar({}, conexao);
 
             const locacao = new Locacao(registro.loc_id, cliente, item.lista, registro.loc_data_pedido, registro.loc_data_entrega, registro.loc_data_retirada_prevista, registro.loc_data_retirada_real, registro.loc_endereco_entrega, registro.loc_valor_total, registro.loc_status, registro.loc_ativo, registro.loc_atualizado_em, registro.loc_criado_em);

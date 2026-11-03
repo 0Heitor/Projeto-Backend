@@ -5,8 +5,8 @@ export default class ContaReceberDAO{
 
     async gravar(conta, conexao){
         if(conta instanceof ContaReceber){
-            const sql = "INSERT INTO financeiro_receber (rec_cliente_id, rec_origem_tipo, rec_valor, forma_pagamento, rec_data_vencimento, rec_descricao, rec_status) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING rec_id";
-            const parametros = [conta.cliente.id, conta.origem_tipo, conta.valor_total, conta.forma_pagamento, conta.data_vencimento, conta.descricao, conta.status];
+            const sql = "INSERT INTO financeiro_receber (rec_cliente_id, rec_origem_tipo, rec_valor, rec_forma_pagamento, rec_data_vencimento, rec_data_pagamento, rec_descricao, rec_status) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING rec_id";
+            const parametros = [conta.cliente.id, conta.origem_tipo, conta.valor_total, conta.forma_pagamento, conta.data_vencimento, conta.data_pagamento, conta.descricao, conta.status];
             const retorno = await conexao.query(sql, parametros);
             conta.id = retorno.rows[0].rec_id;
         }
@@ -14,7 +14,7 @@ export default class ContaReceberDAO{
 
     async atualizar(conta, conexao){
         if(conta instanceof ContaReceber){
-            const sql = "UPDATE financeiro_receber SET rec_cliente_id = $1, rec_origem_tipo = $2, rec_valor = $3, forma_pagamento = $4, rec_data_vencimento = $5, rec_data_pagamento = $6, rec_descricao = $7, rec_status = $8, rec_ativo = $9, rec_atualizado_em = $10 WHERE rec_id = $11";
+            const sql = "UPDATE financeiro_receber SET rec_cliente_id = $1, rec_origem_tipo = $2, rec_valor = $3, rec_forma_pagamento = $4, rec_data_vencimento = $5, rec_data_pagamento = $6, rec_descricao = $7, rec_status = $8, rec_ativo = $9, rec_atualizado_em = $10 WHERE rec_id = $11";
             const parametros = [conta.cliente.id, conta.origem_tipo, conta.valor_total, conta.forma_pagamento, conta.data_vencimento, conta.data_pagamento, conta.descricao, conta.status, conta.ativo, conta.atualizado, conta.id];
             await conexao.query(sql, parametros);
         }
@@ -44,6 +44,11 @@ export default class ContaReceberDAO{
             parametros.push(`%${tipo.cliente}%`);
             i++;
         }
+        if(tipo.origem_tipo && tipo.origem_tipo !== ''){
+            sql += ` AND f.rec_origem_tipo = $${i}`;
+            parametros.push(tipo.origem_tipo);
+            i++;
+        }
         if(tipo.data_vencimento !== undefined && tipo.data_vencimento != ''){
             sql += ` AND f.rec_data_vencimento = $${i}`;
             parametros.push(tipo.data_vencimento);
@@ -59,7 +64,7 @@ export default class ContaReceberDAO{
             parametros.push(tipo.ativo);
             i++;
         }
-        sql += " ORDER BY rec_data_vencimento ASC";
+        sql += " ORDER BY rec_data_vencimento DESC, f.rec_id DESC";
         if(filtro.limit && filtro.limit != ""){
             sql += ` LIMIT $${i}`;
             parametros.push(parseInt(filtro.limit));

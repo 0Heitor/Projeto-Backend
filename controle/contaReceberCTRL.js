@@ -1,3 +1,4 @@
+import Venda from "../modelo/venda.js";
 import contaReceber from "../modelo/contaReceber.js";
 import conectar from "../persistencia/conexao.js";
 
@@ -18,6 +19,8 @@ export default class ContaReceberCTRL{
                 const ativo = dados.ativo;
                 if(cliente && origem_tipo && valor_total && forma_pagamento && descricao && status && ativo !== undefined){
                     const conta = new contaReceber(0, cliente, origem_tipo, valor_total, forma_pagamento, new Date().toISOString(), "", descricao, status, ativo, "", "");
+                    if(status == "PAGO")
+                        conta.data_pagamento = new Date().toISOString();
                     await conexao.query('BEGIN');
                     try{
                         conta.gravar(conexao);//.then(()=>{
@@ -81,7 +84,7 @@ export default class ContaReceberCTRL{
 
                     const timestampParaPostgres = dataHoraLocal.toISOString().slice(0, 19).replace('T', ' ');
                     const conta = new contaReceber(id, cliente, origem_tipo, valor_total, forma_pagamento, data_vencimento, new Date().toISOString(), descricao, status, ativo, timestampParaPostgres, "");
-                    
+
                     await conexao.query('BEGIN');
                     try{
                         conta.alterar(conexao);//.then(()=>{
@@ -179,6 +182,7 @@ export default class ContaReceberCTRL{
                 const dados = requisicao.body;
                 const id = dados.id;
                 const cliente = dados.nome;
+                const origem_tipo = dados.origem_tipo;
                 const data_vencimento = dados.data_vencimento;
                 const status = dados.status;
                 const ativo = dados.ativo;
@@ -189,13 +193,13 @@ export default class ContaReceberCTRL{
                     else
                         filtroFinal[filtros[i]] = dados[filtros[i]];
                 }
-                if(cliente || data_vencimento || status || ativo !== undefined){
-                    const conta = new contaReceber(id, cliente, "", "", "", data_vencimento, "", "", status, ativo, "", "");
+                if(cliente || origem_tipo || data_vencimento || status || ativo !== undefined){
+                    const conta = new contaReceber(id, cliente, origem_tipo, "", "", data_vencimento, "", "", status, ativo, "", "");
                     conta.consultar(filtroFinal, conexao).then((resultado)=>{
                         if(resultado){
                             resposta.status(200).json({
                                 "status":true,
-                                "mensagem":"Tipos de Caçambas consultado com sucesso !",
+                                "mensagem":"Contas a receber consultadas com sucesso !",
                                 "listaFinanceiros": resultado.lista,
                                 "totalRegistros": resultado.total
                             })
@@ -203,32 +207,32 @@ export default class ContaReceberCTRL{
                         else{
                             resposta.status(404).json({
                                 "status":false,
-                                "mensagem":"Tipo de Caçamba não encontrada !"
+                                "mensagem":"Contas a receber não encontrada !"
                             })
                         }
                     }).catch((erro) => {
                         resposta.status(500).json({
                             "status":false,
-                            "mensagem":"Erro ao consultar o Tipo de Caçamba: "+erro.message
+                            "mensagem":"Erro ao consultar a Conta a Receber: "+erro.message
                         })
                     });
                 }
                 else{
                     resposta.status(400).json({
                         "status":false,
-                        "mensagem":"Por favor informe o ID do Tipo de Caçamba a ser consultado !"
+                        "mensagem":"Por favor informe o ID do Conta a receber a ser consultado !"
                     });
                 }
             }
             else{
                 resposta.status(400).json({
                     "status":false,
-                    "mensagem":"Por favor informe o metodo GET para consultar um Tipo de Caçamba !"
+                    "mensagem":"Por favor informe o metodo GET para consultar uma Conta a Receber !"
                 });
             }
         }
         catch(error){
-            console.error("Erro ao consultar o Tipo de Caçamba", error);
+            console.error("Erro ao consultar a Conta a Receber", error);
             throw error;
         }
         finally{conexao.release();}

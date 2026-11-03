@@ -1,6 +1,7 @@
 import Venda from '../modelo/venda.js';
 import ItemVenda from '../modelo/itemVenda.js';
 import Produto from '../modelo/produto.js';
+import contaReceber from '../modelo/contaReceber.js';
 import conectar from "../persistencia/conexao.js";
 
 export default class VendaCTRL{
@@ -15,13 +16,20 @@ export default class VendaCTRL{
                 const usuario = dados.usuario;
                 const total = dados.total;
                 const forma_pagamento = dados.forma_pagamento;
+                const descricao = dados.descricao;
+                const data_vencimento = dados.data_vencimento;
+                const status_conta = dados.status_conta;
+                const ativo_conta = dados.ativo_conta;
+
                 const status = dados.status;
                 const ativo = dados.ativo;
                 const itens = dados.itens;
-                if(cliente && usuario && total && ativo){
+                if(cliente && usuario && total && forma_pagamento && descricao && data_vencimento && status_conta && ativo_conta && status && ativo){
                     await conexao.query('BEGIN');
                     try{
-                        const venda = new Venda(0, [], cliente, usuario, total, forma_pagamento, ativo, "", "");
+                        const venda = new Venda(0, [], cliente, usuario, total, forma_pagamento, status, "", "");
+                        if(status_conta == "PAGO")
+                            venda.status = "PAGO";
                         await venda.gravar(conexao);
                         const idVendaGerado = venda.id;
 
@@ -31,6 +39,12 @@ export default class VendaCTRL{
                             const produto = new Produto(item.produto.id, {}, {}, "", "", "", "", "", 0, 0, 0, 0, 0, 0, "", "", "");
                             await produto.atualizarEstoque(conexao, parseFloat(item.quantidade * -1));
                         }
+                        let conta;
+                        if(status_conta == "PAGO")
+                            conta = new contaReceber(0, cliente, "VENDA", total, forma_pagamento, data_vencimento, new Date().toISOString(), descricao, status_conta, ativo_conta, "", "");
+                        else
+                            conta = new contaReceber(0, cliente, "VENDA", total, forma_pagamento, data_vencimento, null, descricao, status_conta, ativo_conta, "", "");
+                        conta.gravar(conexao);
                         await conexao.query('COMMIT');
 
                         resposta.status(200).json({
@@ -79,13 +93,17 @@ export default class VendaCTRL{
                 const usuario = dados.usuario;
                 const total = dados.total;
                 const forma_pagamento = dados.forma_pagamento;
+                const descricao = dados.descricao;
+                const data_vencimento = dados.data_vencimento;
+                const status_conta = dados.status_conta;
+                const ativo_conta = dados.ativo_conta;
                 const status = dados.status;
                 const ativo = dados.ativo;
                 const itens = dados.itens;
-                if(id && cliente && usuario && total && forma_pagamento && status && ativo !== undefined){
+                if(id && cliente && usuario && total && forma_pagamento && descricao &&data_vencimento && status_conta && ativo_conta && status && ativo !== undefined){
                     await conexao.query('BEGIN');
                     try{
-                        const venda = new Venda(id, itens, cliente, usuario, total, forma_pagamento, status, ativo, new Date().toISOString(), "");
+                        const venda = new Venda(id, itens, cliente, usuario, total, forma_pagamento, status_conta, ativo, new Date().toISOString(), "");
                         await venda.alterar(conexao);
                         //const idVendaGerado = venda.id;
 
@@ -99,6 +117,13 @@ export default class VendaCTRL{
                             let quantidadeEstoque = item.quantidade - quantidadeAnterior;
                             await produto.atualizarEstoque(conexao, quantidadeEstoque);
                         }
+                        let conta;
+                        // Arrumar estar parte de alterar, possível alteração no banco de dados no acrescimo de uma coluna 
+                        if(status_conta == "PAGO")
+                            conta = new contaReceber(0, cliente, "VENDA", total, forma_pagamento, data_vencimento, new Date().toISOString(), descricao, status_conta, ativo_conta, "", "");
+                        else
+                            conta = new contaReceber(0, cliente, "VENDA", total, forma_pagamento, data_vencimento, null, descricao, status_conta, ativo_conta, "", "");
+                        conta.gravar(conexao);
                         await conexao.query('COMMIT');
 
                         resposta.status(200).json({

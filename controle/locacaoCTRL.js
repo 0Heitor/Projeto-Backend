@@ -29,9 +29,9 @@ export default class LocacaoCTRL{
                         const idLocacaoGerado = locacao.id;
 
                         for (const item of itens) {
-                            const itemCacamba = new ItemCacamba(0, locacao, item.cacamba, parseFloat(item.quantidade), parseFloat(item.valor_unitario), item.data_retirada_real, item.status_item, item.ativo, "", "");
+                            const itemCacamba = new ItemCacamba(0, locacao, item.cacamba, parseFloat(item.quantidade), parseFloat(item.valor_unitario), "", status, item.ativo, "", "");
                             await itemCacamba.gravar(conexao);
-                            const cacamba = new Cacamba(item.cacamba.id, {}, {}, "", "", "", "", "", 0, 0, 0, 0, 0, 0, "", "", "");
+                            const cacamba = new Cacamba(item.cacamba.id, {}, "", "", "", "", "", "", 0, 0, 0, 0, 0, 0, "", "", "");
                             await cacamba.atualizarEstado("ALUGADA", conexao);
                         }
                         await conexao.query('COMMIT');
@@ -82,7 +82,7 @@ export default class LocacaoCTRL{
                 const data_pedido = dados.data_pedido;
                 const data_entrega = dados.data_entrega;
                 const data_retirada_prevista = dados.data_retirada_prevista;
-                const data_retirada_real = dados.data_retirada_real;
+                // const data_retirada_real = dados.data_retirada_real;
                 const endereco_entrega = dados.endereco_entrega;
                 const valor_total = dados.valor_total;
                 const status = dados.status;
@@ -99,7 +99,9 @@ export default class LocacaoCTRL{
                 if(id && cliente && data_pedido && data_entrega && data_retirada_prevista && /*data_retirada_real &&*/ endereco_entrega && valor_total && status && ativo !== undefined){
                     await conexao.query('BEGIN');
                     try{
-                        const locacao = new Locacao(id, cliente, itens, data_pedido, data_entrega, data_retirada_prevista, /*data_retirada_real*/ new Date().toISOString(), endereco_entrega, valor_total, status, ativo, new Date().toISOString(), "");
+                        const locacao = new Locacao(id, cliente, itens, data_pedido, data_entrega, data_retirada_prevista, null, endereco_entrega, valor_total, status, ativo, new Date().toISOString(), "");
+                        if(status == "CONCLUIDA")
+                            locacao.data_retirada_real = new Date().toISOString();
                         await locacao.alterar(conexao);
                         //const idLocacaoGerado = locacao.id;
 
@@ -107,18 +109,20 @@ export default class LocacaoCTRL{
                             const itemBusca = new ItemCacamba(item.id, {}, {}, 0, "", "", "", ""/* atualizado_em */, "");
                             const itemAnterior = await itemBusca.consultar({id: item.id}, conexao);
                             const quantidadeAnterior = itemAnterior.lista.length > 0 ? itemAnterior.lista[0].quantidade : 0;
-                            const itemCompra = new ItemCacamba(item.id, locacao, item.cacamba, parseFloat(item.valor_unitario), item.data_retirada_real, item.status_item, item.ativo, new Date().toISOString(), "");
+                            const itemCompra = new ItemCacamba(item.id, locacao, item.cacamba, parseFloat(item.valor_unitario), null, status, item.ativo, new Date().toISOString(), "");
+                            if(status == "CONCLUIDA")
+                                itemCompra.data_retirada_real = new Date().toISOString();
                             await itemCompra.alterar(conexao);
-                            // Atualiza o status da cacamba
-                            const cacamba = new Cacamba(item.cacamba.id, {}, {}, "", "", "", "", "", 0, 0, 0, 0, 0, 0, "", "", "");
-                            await cacamba.atualizarEstado(item.status, conexao);
+                            const cacamba = new Cacamba(item.cacamba.id, {}, "", "", "", "", "", "", 0, 0, 0, 0, 0, 0, "", "", "");
+                            const result = await cacamba.consultar({} , conexao);
+                            status == "CONCLUIDA" ? await cacamba.atualizarEstado("DISPONIVEL", conexao) : await cacamba.atualizarEstado(result.lista[0].status, conexao);
                         }
                         if(status == "CONCLUIDA"){
                             let conta;
                             if(status_conta == "PAGO")
                                 conta = new contaReceber(0, cliente, "LOCAÇÃO", valor_total, forma_pagamento, data_vencimento, new Date().toISOString(), descricao, status_conta, ativo_conta, "", "");
                             else
-                                conta = new contaReceber(0, cliente, "LOCAÇÃO", valor_total, forma_pagamento, data_vencimento, "", descricao, status_conta, ativo_conta, "", "");
+                                conta = new contaReceber(0, cliente, "LOCAÇÃO", valor_total, forma_pagamento, data_vencimento, null, descricao, status_conta, ativo_conta, "", "");
                             conta.gravar(conexao);
                         }
                         await conexao.query('COMMIT');
