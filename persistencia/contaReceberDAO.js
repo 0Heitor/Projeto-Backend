@@ -49,10 +49,11 @@ export default class ContaReceberDAO{
             parametros.push(tipo.origem_tipo);
             i++;
         }
-        if(tipo.data_vencimento !== undefined && tipo.data_vencimento != ''){
-            sql += ` AND f.rec_data_vencimento = $${i}`;
+        if(tipo.data_vencimento !== undefined && filtro.data_vencimento_inicial !== undefined && tipo.data_vencimento != '' && filtro.data_vencimento_inicial != ''){
+            sql += ` AND f.rec_data_vencimento BETWEEN $${i} AND $${i+1}`;
+            parametros.push(filtro.data_vencimento_inicial);
             parametros.push(tipo.data_vencimento);
-            i++;
+            i+=2;
         }
         if(tipo.status !== undefined && tipo.status != ''){
             sql += ` AND f.rec_status = $${i}`;

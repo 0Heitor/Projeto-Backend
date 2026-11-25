@@ -3,6 +3,7 @@ import ItemCacamba from '../modelo/itemCacamba.js';
 import Cacamba from '../modelo/cacamba.js';
 import contaReceber from '../modelo/contaReceber.js';
 import conectar from "../persistencia/conexao.js";
+import {enviarEnderecoParaGeocodingAPI} from "../servicos/coordenadasService.js";
 
 export default class LocacaoCTRL{
     async gravar(requisicao, resposta){
@@ -24,12 +25,22 @@ export default class LocacaoCTRL{
                 if(cliente && data_entrega && data_retirada_prevista && endereco_entrega && valor_total && status && ativo){
                     await conexao.query('BEGIN');
                     try{
-                        const locacao = new Locacao(0, cliente, itens, data_entrega, data_entrega, data_retirada_prevista, "", endereco_entrega, valor_total, status, ativo, "", "");
+                        let locacao;
+                        if(status == "ENTREGUE"){
+                            const coordenadas = await enviarEnderecoParaGeocodingAPI(endereco_entrega);
+                            locacao = new Locacao(0, cliente, itens, data_entrega, data_entrega, data_retirada_prevista, "", endereco_entrega, valor_total, status, coordenadas.latitude, coordenadas.longitude, ativo, "", "");
+                        }
+                        else
+                            locacao = new Locacao(0, cliente, itens, data_entrega, data_entrega, data_retirada_prevista, "", endereco_entrega, valor_total, status, 0, 0, ativo, "", "");
                         await locacao.gravar(conexao);
                         const idLocacaoGerado = locacao.id;
 
                         for (const item of itens) {
-                            const itemCacamba = new ItemCacamba(0, locacao, item.cacamba, parseFloat(item.quantidade), parseFloat(item.valor_unitario), "", status, item.ativo, "", "");
+                            let itemCacamba;
+                            if(status == "ENTREGUE")
+                                itemCacamba = new ItemCacamba(0, locacao, item.cacamba, parseFloat(item.valor_unitario), "", "ALUGADA", item.ativo, "", "");
+                            else
+                                itemCacamba = new ItemCacamba(0, locacao, item.cacamba, parseFloat(item.valor_unitario), "", status, item.ativo, "", "");
                             await itemCacamba.gravar(conexao);
                             const cacamba = new Cacamba(item.cacamba.id, {}, "", "", "", "", "", "", 0, 0, 0, 0, 0, 0, "", "", "");
                             await cacamba.atualizarEstado("ALUGADA", conexao);
@@ -87,10 +98,11 @@ export default class LocacaoCTRL{
                 const valor_total = dados.valor_total;
                 const status = dados.status;
                 const status_conta = dados.status_conta;
+                // const latitude = dados.latitude;
+                // const longitude = dados.longitude;
                 const ativo = dados.ativo;
                 const ativo_conta = dados.ativo_conta;
                 const itens = dados.itens;
-
 
                 // const origem_tipo = dados.origem_tipo;
                 const forma_pagamento = dados.forma_pagamento;
@@ -99,7 +111,16 @@ export default class LocacaoCTRL{
                 if(id && cliente && data_pedido && data_entrega && data_retirada_prevista && /*data_retirada_real &&*/ endereco_entrega && valor_total && status && ativo !== undefined){
                     await conexao.query('BEGIN');
                     try{
-                        const locacao = new Locacao(id, cliente, itens, data_pedido, data_entrega, data_retirada_prevista, null, endereco_entrega, valor_total, status, ativo, new Date().toISOString(), "");
+                        let locacao;
+                        if(dados.mapa){
+                            let latitude = dados.latitude;
+                            let longitude = dados.longitude;
+                            locacao = new Locacao(id, cliente, itens, data_pedido, data_entrega, data_retirada_prevista, null, endereco_entrega, valor_total, status, latitude, longitude, ativo, new Date().toISOString(), "");
+                        }
+                        else{
+                            const coordenadas = await enviarEnderecoParaGeocodingAPI(endereco_entrega);
+                            locacao = new Locacao(id, cliente, itens, data_pedido, data_entrega, data_retirada_prevista, null, endereco_entrega, valor_total, status, coordenadas.latitude, coordenadas.longitude, ativo, new Date().toISOString(), "");
+                        }
                         if(status == "CONCLUIDA")
                             locacao.data_retirada_real = new Date().toISOString();
                         await locacao.alterar(conexao);
@@ -110,6 +131,8 @@ export default class LocacaoCTRL{
                             const itemAnterior = await itemBusca.consultar({id: item.id}, conexao);
                             const quantidadeAnterior = itemAnterior.lista.length > 0 ? itemAnterior.lista[0].quantidade : 0;
                             const itemCompra = new ItemCacamba(item.id, locacao, item.cacamba, parseFloat(item.valor_unitario), null, status, item.ativo, new Date().toISOString(), "");
+                            if(status == "ENTREGUE")
+                                itemCompra.status_item = "ALUGADA";
                             if(status == "CONCLUIDA")
                                 itemCompra.data_retirada_real = new Date().toISOString();
                             await itemCompra.alterar(conexao);
@@ -182,7 +205,7 @@ export default class LocacaoCTRL{
                         }
 
                         //const compra = new Compra(id, [], fornecedor, data_compra, valor_total, status, ativo,  new Date().toISOString(), "");
-                        const locacao = new Locacao(id, {}, [], "", "", "", "", "", 0, "", "", "", "");
+                        const locacao = new Locacao(id, {}, [], "", "", "", "", "", 0, "", 0, 0, "", "", "");
                         await locacao.excluir(conexao);
                         const idLocacaoGerado = locacao.id;
 
@@ -229,7 +252,7 @@ export default class LocacaoCTRL{
             resposta.type("application/json");
             if(requisicao.method === "POST" && requisicao.is('application/json')){
                 const dados = requisicao.body;
-                const filtros = [ "limit", "offset", "consulta"];
+                const filtros = [ "limit", "offset", "consulta", "status_cacamba"];
                 const id = dados.id;
                 const cliente = dados.cliente;
                 //const usuario = dados.usuario;
@@ -246,7 +269,7 @@ export default class LocacaoCTRL{
                         filtroFinal[filtros[i]] = dados[filtros[i]];
                 }
                 if(id || cliente || status || ativo !== undefined){
-                    const locacao = new Locacao(id, cliente, itens, "", "", "", "", "", 0, status, ativo, "", "");
+                    const locacao = new Locacao(id, cliente, itens, "", "", "", "", "", 0, status, 0, 0, ativo, "", "");
                     locacao.consultar(filtroFinal, conexao).then((resultado) => {
                         resposta.status(200).json({
                             "status":true,

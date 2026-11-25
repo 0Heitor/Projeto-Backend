@@ -2,6 +2,11 @@ import Venda from "../modelo/venda.js";
 import contaReceber from "../modelo/contaReceber.js";
 import conectar from "../persistencia/conexao.js";
 
+function obterDataLocal(date = new Date()) {
+    const pad = (n) => String(n).padStart(2, "0");
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+}
+
 export default class ContaReceberCTRL{
     
     async gravar(requisicao, resposta){
@@ -18,7 +23,7 @@ export default class ContaReceberCTRL{
                 const status = dados.status;
                 const ativo = dados.ativo;
                 if(cliente && origem_tipo && valor_total && forma_pagamento && descricao && status && ativo !== undefined){
-                    const conta = new contaReceber(0, cliente, origem_tipo, valor_total, forma_pagamento, new Date().toISOString(), "", descricao, status, ativo, "", "");
+                    const conta = new contaReceber(0, cliente, origem_tipo, valor_total, forma_pagamento, obterDataLocal() , "", descricao, status, ativo, "", "");
                     if(status == "PAGO")
                         conta.data_pagamento = new Date().toISOString();
                     await conexao.query('BEGIN');
@@ -83,7 +88,7 @@ export default class ContaReceberCTRL{
                     const dataHoraLocal = new Date(agora.getTime() - offsetMs);
 
                     const timestampParaPostgres = dataHoraLocal.toISOString().slice(0, 19).replace('T', ' ');
-                    const conta = new contaReceber(id, cliente, origem_tipo, valor_total, forma_pagamento, data_vencimento, new Date().toISOString(), descricao, status, ativo, timestampParaPostgres, "");
+                    const conta = new contaReceber(id, cliente, origem_tipo, valor_total, forma_pagamento, data_vencimento, obterDataLocal(), descricao, status, ativo, timestampParaPostgres, "");
 
                     await conexao.query('BEGIN');
                     try{
@@ -178,7 +183,7 @@ export default class ContaReceberCTRL{
         try{
             resposta.type("application/json");
             if(requisicao.method === "POST" && requisicao.is('application/json')){
-                const filtros = [ "limit", "offset", "consulta"];
+                const filtros = [ "limit", "offset", "consulta", "data_vencimento_inicial"];
                 const dados = requisicao.body;
                 const id = dados.id;
                 const cliente = dados.nome;

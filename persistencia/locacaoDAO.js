@@ -5,8 +5,8 @@ import Cliente from "../modelo/cliente.js";
 export default class LocacaoDAO{
     async gravar(locacao, conexao){
         if(locacao instanceof Locacao){
-            const sql = "INSERT INTO locacoes (loc_cli_id, loc_data_entrega, loc_data_retirada_prevista, loc_endereco_entrega, loc_valor_total, loc_status) VALUES ($1, $2, $3, $4, $5, $6) RETURNING loc_id";
-            const parametros = [locacao.cliente.id, locacao.data_entrega, locacao.data_retirada_prevista, locacao.endereco_entrega, locacao.valor_total, locacao.status];
+            const sql = "INSERT INTO locacoes (loc_cli_id, loc_data_entrega, loc_data_retirada_prevista, loc_endereco_entrega, loc_valor_total, loc_status, loc_latitude, loc_longitude) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING loc_id";
+            const parametros = [locacao.cliente.id, locacao.data_entrega, locacao.data_retirada_prevista, locacao.endereco_entrega, locacao.valor_total, locacao.status, locacao.latitude, locacao.longitude];
             const retorno = await conexao.query(sql, parametros);
             locacao.id = retorno.rows[0].loc_id;
         }
@@ -14,8 +14,8 @@ export default class LocacaoDAO{
 
     async atualizar(locacao, conexao){
         if(locacao instanceof Locacao){
-            const sql = "UPDATE locacoes SET loc_cli_id = $1, loc_data_entrega = $2, loc_data_retirada_prevista = $3, loc_data_retirada_real = $4, loc_endereco_entrega = $5, loc_valor_total = $6, loc_status = $7, loc_ativo = $8, loc_atualizado_em = $9 WHERE loc_id = $10";
-            const parametros = [locacao.cliente.id, locacao.data_entrega, locacao.data_retirada_prevista, locacao.data_retirada_real, locacao.endereco_entrega, locacao.valor_total, locacao.status, locacao.ativo, locacao.atualizado_em, locacao.id];
+            const sql = "UPDATE locacoes SET loc_cli_id = $1, loc_data_entrega = $2, loc_data_retirada_prevista = $3, loc_data_retirada_real = $4, loc_endereco_entrega = $5, loc_valor_total = $6, loc_status = $7, loc_ativo = $8, loc_atualizado_em = $9, loc_latitude = $10, loc_longitude = $11 WHERE loc_id = $12";
+            const parametros = [locacao.cliente.id, locacao.data_entrega, locacao.data_retirada_prevista, locacao.data_retirada_real, locacao.endereco_entrega, locacao.valor_total, locacao.status, locacao.ativo, locacao.atualizado_em, locacao.latitude, locacao.longitude, locacao.id];
             await conexao.query(sql, parametros);
         }
     }
@@ -83,6 +83,18 @@ export default class LocacaoDAO{
             parametros.push(locacao.atualizado_em);
             i++;
         }
+        if (filtro.status_cacamba !== undefined && filtro.status_cacamba !== "") {
+            sql += `
+                AND EXISTS (
+                    SELECT 1
+                    FROM itens_cacamba ic
+                    WHERE ic.itc_loc_id = l.loc_id
+                    AND ic.itc_status_item = $${i}
+                )
+            `;
+            parametros.push(filtro.status_cacamba);
+            i++;
+        }
         sql += " ORDER BY l.loc_data_pedido DESC";
         if(filtro.limit && filtro.limit != ""){
             sql += ` LIMIT $${i}`;
@@ -100,10 +112,10 @@ export default class LocacaoDAO{
         for(const registro of registros){
             //const usuario = new Usuario(registro.usu_id, registro.usu_nome, registro.usu_email, "", registro.usu_nivel, registro.usu_ativo, registro.usu_ultimo_login, registro.usu_criado_em, "", "", 0);
             const cliente = new Cliente(registro.cli_id, registro.cli_nome, registro.cli_cpf_cnpj, registro.cli_rg, registro.cli_data_nascimento, registro.cli_profissao, registro.cli_local_trabalho, registro.cli_telefone, registro.cli_cep, registro.cli_endereco, registro.cli_ativo, registro.cli_observacoes, registro.cli_criado_em);
-            const itenscacamba = new ItemCacamba(0, {id: registro.loc_id}, {}, 0, registro.loc_data_retirada_real, "", "", "", "");
+            const itenscacamba = new ItemCacamba(0, {id: registro.loc_id}, {}, 0, registro.loc_data_retirada_real, filtro.status_cacamba, "", "", "");
             const item = await itenscacamba.consultar({}, conexao);
 
-            const locacao = new Locacao(registro.loc_id, cliente, item.lista, registro.loc_data_pedido, registro.loc_data_entrega, registro.loc_data_retirada_prevista, registro.loc_data_retirada_real, registro.loc_endereco_entrega, registro.loc_valor_total, registro.loc_status, registro.loc_ativo, registro.loc_atualizado_em, registro.loc_criado_em);
+            const locacao = new Locacao(registro.loc_id, cliente, item.lista, registro.loc_data_pedido, registro.loc_data_entrega, registro.loc_data_retirada_prevista, registro.loc_data_retirada_real, registro.loc_endereco_entrega, registro.loc_valor_total, registro.loc_status, registro.loc_latitude, registro.loc_longitude, registro.loc_ativo, registro.loc_atualizado_em, registro.loc_criado_em);
             listaLocacoes.push(locacao);
         }
         return{

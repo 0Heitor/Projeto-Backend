@@ -11,11 +11,13 @@ export default class Locacao{
     #endereco_entrega
     #valor_total
     #status
+    #latitude
+    #longitude
     #ativo
     #atualizado_em
     #criado_em
 
-    constructor(id=0, cliente={}, itens=[], data_pedido="", data_entrega="", data_retirada_prevista="", data_retirada_real="", endereco_entrega="", valor_total=0, status="", ativo="", atualizado_em="", criado_em=""){
+    constructor(id=0, cliente={}, itens=[], data_pedido="", data_entrega="", data_retirada_prevista="", data_retirada_real="", endereco_entrega="", valor_total=0, status="", latitude=0, longitude=0, ativo="", atualizado_em="", criado_em=""){
         this.#id = id;
         this.#cliente = cliente;
         this.#itens = itens;
@@ -26,6 +28,8 @@ export default class Locacao{
         this.#endereco_entrega = endereco_entrega;
         this.#valor_total = valor_total;
         this.#status = status;
+        this.#latitude = latitude;
+        this.#longitude = longitude;
         this.#ativo = ativo;
         this.#atualizado_em = atualizado_em;
         this.#criado_em = criado_em;
@@ -111,6 +115,22 @@ export default class Locacao{
         this.#status = novoStatus;
     }
 
+    get latitude(){
+        return this.#latitude;
+    }
+
+    set latitude(novaLatitude){
+        this.#latitude = novaLatitude;
+    }
+
+    get longitude(){
+        return this.#longitude;
+    }
+
+    set longitude(novaLongitude){
+        this.#longitude = novaLongitude;
+    }
+
     get ativo(){
         return this.#ativo;
     }
@@ -147,6 +167,8 @@ export default class Locacao{
             endereco_entrega:this.#endereco_entrega,
             valor_total:this.#valor_total,
             status:this.#status,
+            latitude:this.#latitude,
+            longitude:this.#longitude,
             ativo:this.#ativo,
             atualizado_em:this.#atualizado_em,
             criado_em:this.#criado_em
